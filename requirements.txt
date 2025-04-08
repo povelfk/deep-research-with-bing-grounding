@@ -1,0 +1,16 @@
+flask
+openai
+uuid
+python-dotenv
+azure-core
+qdrant-client
+tiktoken
+openai-agents
+langchain
+langchain-community
+# tavily-python
+wikipedia
+rich
+
+azure-identity==1.20.0
+azure-ai-projects==1.0.0b7
