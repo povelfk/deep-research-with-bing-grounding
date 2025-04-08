@@ -8,7 +8,6 @@ tiktoken
 openai-agents
 langchain
 langchain-community
-# tavily-python
 wikipedia
 rich
 
