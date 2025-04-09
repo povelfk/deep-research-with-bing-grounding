@@ -7,7 +7,8 @@ from pydantic import BaseModel, Field, ValidationError
 # Each item contains details about one search result including title, summary content, and source information
 class SearchResultItem(BaseModel):
     title: str = Field(..., description="Title of the search result")
-    snippet: Optional[str] = Field(None, description="Short summary of the content")
+    # snippet: Optional[str] = Field(None, description="Short summary of the content")
+    full_text: str = Field(..., description="The complete content retrieved from the search result")
     url: str = Field(..., description="URL of the search result")
     source: Optional[str] = Field(None, description="Name of the source, if available")
     published_date: Optional[str] = Field(None, description="Publication date of the result (if applicable)")
