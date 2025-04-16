@@ -10,5 +10,13 @@ langchain
 langchain-community
 rich
 
+langchain
+langchain-community
+duckduckgo-search
+tavily-python
+wikipedia
+
+trafilatura
+
 azure-identity==1.20.0
 azure-ai-projects==1.0.0b7
