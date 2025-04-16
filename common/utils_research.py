@@ -39,10 +39,18 @@ def preprocess_research_data(plan, mapped_chunks):
         "data_visualization_opportunities": visualization_suggestions, # Ideas for visual elements
         
         # Guidance on overall document organization (flexible, not template-based)
-        "structural_guidance": "Analyze the research content and determine the most logical and effective structure for the report. Create sections that naturally emerge from the content rather than following a predefined template. Ensure comprehensive coverage of all subtopics while maintaining a coherent narrative flow.",
-        
+        "structural_guidance": (
+            "Analyze the research content and determine the most logical and effective structure for the report. "
+            "Favor broad thematic sections OVER overly fragmented structures. "
+            "Use subsections only where helpful, and limit sub-subsections to a MINIMUM."
+            "Sub-subsections should only be used in cases where they genuinely improve clarity. Ensure all subtopics are thoroughly covered in a coherent, well-integrated narrative."
+        ),
         # Guidance on expected depth and length
-        "depth_requirements": "Create an in-depth, comprehensive, and authoritative report with extensive detail in each section. Minimum expected length is equivalent to 8-10 pages of comprehensive analysis (approximately 4000-5000 words)."
+        "depth_requirements": (
+            "Create an in-depth, comprehensive, and authoritative report with substantial detail in each major section. "
+            "The final report should be equivalent to 8-10 pages (approximately 4000-5000 words), with a focus on deep analysis, "
+            "paragraph-based structure, and integrated argumentation."
+        ),
     }
     
     return research_input
