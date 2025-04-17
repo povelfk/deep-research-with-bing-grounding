@@ -13,7 +13,6 @@ rich
 langchain
 langchain-community
 duckduckgo-search
-tavily-python
 wikipedia
 
 trafilatura
