@@ -187,3 +187,96 @@ def create_research_workflow_diagram(
 
     # Return the digraph object in case you want to display or manipulate it further
     return dot
+
+def create_research_workflow_diagram_scraper(
+    output_filename='research_workflow_diagram_scraper', 
+    format='png'
+):
+    """
+    Creates and renders the research workflow diagram using Graphviz.
+
+    Args:
+        output_filename (str): The base filename for the rendered diagram (no extension).
+        format (str): The file format for rendering (e.g., 'png', 'pdf', 'svg').
+
+    Returns:
+        Digraph: The created Graphviz Digraph object.
+    """
+    dot = Digraph(comment='Research Workflow', format=format)
+
+    # Graph attributes
+    dot.attr(
+        rankdir='LR',
+        splines='curved',
+        fontname='Helvetica',
+        fontsize='14',
+        bgcolor='white',
+        ranksep='1.2',   # Increased spacing between ranks
+        nodesep='0.8'    # Increased spacing between nodes
+    )
+    dot.attr(
+        'graph',
+        ratio='compress',
+        size='22,10'  # Tweak to taste; adjusts bounding box
+    )
+
+    # Node attributes
+    dot.attr(
+        'node',
+        shape='box',
+        style='rounded,filled',
+        color='#4472C4',
+        fillcolor='#E9EEF6',
+        fontname='Helvetica',
+        fontsize='12',
+        fontcolor='#333333'
+    )
+
+    # Nodes
+    dot.node('user', 'User Query\nInput', shape='ellipse', fillcolor='#D6E9F8')
+    dot.node('planner', 'PlannerAgent\nResearch Planning', fillcolor='#CCE5FF')
+    dot.node('search', 'BingSearchAgent\nWeb Information Retrieval', fillcolor='#FFEECC')
+    dot.node('scraper', 'ScraperAgent\nData Extraction', fillcolor='#FFF5CC')
+    dot.node('summary', 'SummaryAgent\nContent Analysis & Summarization', fillcolor='#E6FFE6')
+    dot.node('research', 'ResearchAgent\nReport Generation', fillcolor='#E0EAFF')
+    dot.node('review', 'PeerReviewAgent\nQuality Evaluation', fillcolor='#FFE6E6')
+    dot.node('decision', 'Meets Quality\nStandards?', shape='diamond', fillcolor='#FFF2CC')
+    dot.node('report', 'Final Research\nReport', shape='ellipse', fillcolor='#D5F5D5')
+
+    # Main workflow edges
+    dot.edge('user', 'planner', label='Query')
+    dot.edge('planner', 'search', label='Plan')
+    dot.edge('search', 'scraper', label='Results')
+    dot.edge('scraper', 'summary', label='Cleaned Data')
+    # dot.edge('search', 'summary', label='Results')
+    dot.edge('summary', 'research', label='Summaries')
+    dot.edge('research', 'review', label='Draft')
+    dot.edge('review', 'decision', label='Evaluation')
+    dot.edge('decision', 'report', label='Yes')
+
+    # Iterative improvement loop
+    dot.edge(
+        'research', 'decision',
+        label='No',
+        color='#FF9999',
+        constraint='false',
+        style='curved',
+        dir='back'  # Reverse arrow direction visually
+    )
+
+    # Feedback loop cluster
+    with dot.subgraph(name='cluster_0') as c:
+        c.attr(
+            label='Iterative Improvement Loop',
+            style='rounded,dashed',
+            color='#FF9999',
+            penwidth='1.5',
+            fontcolor='#666666',
+            fontsize='12'
+        )
+        c.node('research')
+        c.node('review')
+        c.node('decision')
+
+    # Return the digraph object in case you want to display or manipulate it further
+    return dot
