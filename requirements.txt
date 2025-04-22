@@ -9,12 +9,6 @@ openai-agents
 langchain
 langchain-community
 rich
-
-langchain
-langchain-community
-duckduckgo-search
-wikipedia
-
 trafilatura
 
 azure-identity==1.20.0
