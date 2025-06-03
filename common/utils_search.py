@@ -1,4 +1,4 @@
-from azure.ai.projects.models import MessageRole
+from azure.ai.agents.models import MessageRole
 
 def extract_agent_response_and_urls(project_client, thread_id, query):
     """
@@ -7,8 +7,10 @@ def extract_agent_response_and_urls(project_client, thread_id, query):
     extracted_urls = []
     agent_response_text = ""
 
-    messages = project_client.agents.list_messages(thread_id=thread_id)
-    last_agent_message = messages.get_last_message_by_role(role=MessageRole.AGENT)
+    last_agent_message = project_client.agents.messages.get_last_message_by_role(
+        thread_id=thread_id,
+        role=MessageRole.AGENT
+    )
 
     if last_agent_message:
         if last_agent_message.text_messages:
