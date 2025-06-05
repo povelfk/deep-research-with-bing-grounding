@@ -18,11 +18,13 @@ The system uses specialized AI agents orchestrated together to transform a user 
 
 ## Notebooks Overview
 
-This repository provides two main notebooks for different research workflows:
+This repository provides three main notebooks for different research workflows:
 
-- **deep_research_with_bing_search.ipynb**: Demonstrates the core workflow using BingSearchAgent to retrieve and summarize web content. This is suitable for most research tasks where summarized search results are sufficient.
+- **01_deep_research_with_bing_search.ipynb**: Demonstrates the core workflow using BingSearchAgent to retrieve and summarize web content. This is suitable for most research tasks where summarized search results are sufficient.
 
-- **deep_research_with_bing_search_scraping.ipynb**: Extends the workflow by introducing a ScraperAgent (WebScraperAgent) that visits URLs returned by BingSearchAgent, extracts and cleans the main content, and then passes this richer data to the summarization and reporting agents. Use this notebook when you need deeper, more contextually relevant information from web pages beyond what is available in search result snippets.
+- **02_deep_research_with_bing_search_scraping.ipynb**: Extends the workflow by introducing a ScraperAgent (WebScraperAgent) that visits URLs returned by BingSearchAgent, extracts and cleans the main content, and then passes this richer data to the summarization and reporting agents. Use this notebook when you need deeper, more contextually relevant information from web pages beyond what is available in search result snippets.
+
+- **03_deep_research_with_azure_ai_agents_only.ipynb**: Features an advanced implementation using Azure AI Agents with agent-to-agent handoffs and iterative loops between ResearchAgent and PeerReviewAgent. This notebook demonstrates sophisticated agent orchestration patterns, including automated peer review cycles that continue until quality standards are met, using both custom loop functions and Semantic Kernel's HandoffOrchestration framework.
 
 ## Features
 
@@ -69,21 +71,27 @@ This repository provides two main notebooks for different research workflows:
 
 ### Running the Project
 
-1. Open and run either `deep_research_with_bing_search.ipynb` or `deep_research_with_bing_search_scraping.ipynb` in a Jupyter environment:
-   - Use `deep_research_with_bing_search.ipynb` for standard research workflows using only Bing search results.
-   - Use `deep_research_with_bing_search_scraping.ipynb` for enhanced workflows that scrape and analyze the full content of web pages for deeper insights.
+1. Choose and run one of the three notebooks in a Jupyter environment:
+   - Use `01_deep_research_with_bing_search.ipynb` for standard research workflows using only Bing search results.
+   - Use `02_deep_research_with_bing_search_scraping.ipynb` for enhanced workflows that scrape and analyze the full content of web pages for deeper insights.
+   - Use `03_deep_research_with_azure_ai_agents_only.ipynb` for advanced agent orchestration with automated peer review loops and handoff patterns.
 2. Follow the cells in sequence to execute the full research workflow.
 3. Modify the `user_query` variable to research different topics.
 
 ## Project Structure
 
-- `deep_research_with_bing_search.ipynb`: Main notebook with the standard workflow (Bing search only)
-- `deep_research_with_bing_search_scraping.ipynb`: Enhanced workflow with web scraping for deeper content extraction
+- `01_deep_research_with_bing_search.ipynb`: Main notebook with the standard workflow (Bing search only)
+- `02_deep_research_with_bing_search_scraping.ipynb`: Enhanced workflow with web scraping for deeper content extraction
+- `03_deep_research_with_azure_ai_agents_only.ipynb`: Advanced agent orchestration with automated peer review loops and handoff patterns
 - `common/`: Shared utility modules
+  - `create_azure_ai_agents.py`: Functions for creating and configuring Azure AI Agents
+  - `data_models.py`: Data models and structures used across the project
   - `helper.py`: Helper functions for visualization and workflow display
-  - `utils_search.py`: Search result parsing utilities
+  - `update_instructions.py`: Utilities for updating agent instructions and configurations
+  - `utils_ai_agents.py`: Azure AI Agents utilities for agent orchestration
   - `utils_research.py`: Research data processing functions
   - `utils_scraping.py`: Web scraping utilities
+  - `utils_search.py`: Search result parsing utilities
   - `utils_summary.py`: Summarization utilities
 - `requirements.txt`: Project dependencies
 
