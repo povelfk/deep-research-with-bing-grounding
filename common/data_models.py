@@ -20,6 +20,7 @@ class Citation(BaseModel):
 
 class ComprehensiveResearchReport(BaseModel):
     objective: str = Field(..., description="The original research objective")
+    success_criteria: List[str] = Field(..., description="Criteria to determine when the research is sufficiently complete.")
     research_report: str = Field(..., description=(
         "Comprehensive research report in markdown. "
         "It should be structured with meaningful headings and subsections, but emphasize **fully-developed paragraphs**. "
@@ -44,9 +45,9 @@ class ComprehensiveResearchReport(BaseModel):
     additional_queries: Optional[List[str]] = Field(default=None, description="Suggestions for additional research.")
 
 class PeerReviewFeedback(BaseModel):
-    overall_feedback: str = Field(..., description="General feedback on the report.")
-    strengths: List[str] = Field(..., description="Aspects of the report that are well done.")
-    suggested_improvements: List[str] = Field(..., description="Specific suggestions to improve clarity, completeness, accuracy, or structure.")
+    overall_feedback: Optional[str] = Field(default=None, description="General feedback on the report.")
+    strengths: Optional[List[str]] = Field(default=None, description="Aspects of the report that are well done.")
+    suggested_improvements: Optional[List[str]] = Field(default=None, description="Specific suggestions to improve clarity, completeness, accuracy, or structure.")
     additional_queries: Optional[List[str]] = Field(default=None, description="Additional research queries that could strengthen the report.")
     is_satisfactory: bool = Field(..., description="Indicates if the report meets all quality standards and no further revisions are needed.")
-    
+    provided_report: Optional[ComprehensiveResearchReport] = Field(default=None, description="The report that **was** reviewed. Should only be provided if the report needs to be sent back to the Research Agent.")
