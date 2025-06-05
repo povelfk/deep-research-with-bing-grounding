@@ -17,7 +17,7 @@ def preprocess_research_data(plan, mapped_chunks):
     """
     
     # Extract core data from plan - create a clean list of subtopics for easier reference
-    subtopics_list = [task.subtopic for task in plan.final_output.research_tasks]
+    subtopics_list = [task.subtopic for task in plan.research_tasks]
     
     # Create guidance for data visualizations without dictating specific sections
     # These suggestions encourage the agent to include visuals that enhance understanding
@@ -32,9 +32,9 @@ def preprocess_research_data(plan, mapped_chunks):
     # Create the enhanced input for the research agent - excluding predefined sections
     # This structure provides content and guidance while preserving creative flexibility
     research_input = {
-        "objective": plan.final_output.objective,               # The main research goal
+        "objective": plan.objective,                            # The main research goal
         "aggregated_summaries": mapped_chunks,                  # Organized research content by subtopic
-        "success_criteria": plan.final_output.success_criteria, # Metrics to ensure research completeness
+        "success_criteria": plan.success_criteria,              # Metrics to ensure research completeness
         "subtopics": subtopics_list,                            # List of all research subtopics
         "data_visualization_opportunities": visualization_suggestions, # Ideas for visual elements
         
