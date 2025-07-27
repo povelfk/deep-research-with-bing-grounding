@@ -24,7 +24,7 @@ This repository provides three main notebooks for different research workflows:
 
 - **02_deep_research_with_bing_search_scraping.ipynb**: Extends the workflow by introducing a ScraperAgent (WebScraperAgent) that visits URLs returned by BingSearchAgent, extracts and cleans the main content, and then passes this richer data to the summarization and reporting agents. Use this notebook when you need deeper, more contextually relevant information from web pages beyond what is available in search result snippets.
 
-- **03_deep_research_with_azure_ai_agents_only.ipynb**: Features an advanced implementation using Azure AI Agents with agent-to-agent handoffs and iterative loops between ResearchAgent and PeerReviewAgent. This notebook demonstrates sophisticated agent orchestration patterns, including automated peer review cycles that continue until quality standards are met, using both custom loop functions and Semantic Kernel's HandoffOrchestration framework.
+- **03_deep_research_with_azure_ai_agents_only.ipynb**: Features a **pure Azure AI Agents implementation** with custom agent-to-agent handoffs and iterative loops between ResearchAgent and PeerReviewAgent. Unlike the other notebooks that use a hybrid approach, this notebook demonstrates how to build the entire research workflow using **Azure AI Agents exclusively**, including automated peer review cycles that continue until quality standards are met through a custom `loop_agents` function.
 
 ## Features
 
@@ -40,8 +40,9 @@ This repository provides three main notebooks for different research workflows:
 ## Technology Stack
 
 - **Azure OpenAI**: Core reasoning capability for all agents
-- **Azure AI Agentss Service**: Infrastructure for Bing Search integration
-- **OpenAI Agents SDK**: Agent orchestration framework
+- **Azure AI Agents**: Exclusive agent orchestration platform (notebook 03)
+- **OpenAI Agents SDK + Azure AI Agents**: Hybrid orchestration approach (notebooks 01 & 02, with Azure AI Agents used specifically for Bing Search integration)
+- **Azure AI Projects Service**: Infrastructure for Bing Search integration
 - **Jupyter Notebooks**: Interactive development environment
 - **Python-based Web Scraping (Trafilatura, requests, custom logic)**: Used by the WebScraperAgent to extract, clean, and filter main content from web pages
 
@@ -72,17 +73,17 @@ This repository provides three main notebooks for different research workflows:
 ### Running the Project
 
 1. Choose and run one of the three notebooks in a Jupyter environment:
-   - Use `01_deep_research_with_bing_search.ipynb` for standard research workflows using only Bing search results.
-   - Use `02_deep_research_with_bing_search_scraping.ipynb` for enhanced workflows that scrape and analyze the full content of web pages for deeper insights.
-   - Use `03_deep_research_with_azure_ai_agents_only.ipynb` for advanced agent orchestration with automated peer review loops and handoff patterns.
+   - Use `01_deep_research_with_bing_search.ipynb` for standard research workflows using the hybrid OpenAI Agents SDK + Azure AI Agents approach.
+   - Use `02_deep_research_with_bing_search_scraping.ipynb` for enhanced workflows that scrape and analyze the full content of web pages for deeper insights using the hybrid approach.
+   - Use `03_deep_research_with_azure_ai_agents_only.ipynb` for pure Azure AI Agents implementation with custom agent orchestration and automated peer review loops.
 2. Follow the cells in sequence to execute the full research workflow.
 3. Modify the `user_query` variable to research different topics.
 
 ## Project Structure
 
-- `01_deep_research_with_bing_search.ipynb`: Main notebook with the standard workflow (Bing search only)
-- `02_deep_research_with_bing_search_scraping.ipynb`: Enhanced workflow with web scraping for deeper content extraction
-- `03_deep_research_with_azure_ai_agents_only.ipynb`: Advanced agent orchestration with automated peer review loops and handoff patterns
+- `01_deep_research_with_bing_search.ipynb`: Main notebook with the standard workflow (hybrid OpenAI Agents SDK + Azure AI Agents approach)
+- `02_deep_research_with_bing_search_scraping.ipynb`: Enhanced workflow with web scraping for deeper content extraction (hybrid approach)
+- `03_deep_research_with_azure_ai_agents_only.ipynb`: Pure Azure AI Agents implementation with custom agent orchestration and automated peer review loops
 - `common/`: Shared utility modules
   - `create_azure_ai_agents.py`: Functions for creating and configuring Azure AI Agents
   - `data_models.py`: Data models and structures used across the project
