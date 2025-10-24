@@ -6,16 +6,16 @@ from rich.console import Console
 from rich.markdown import Markdown
 
 from agent_framework import WorkflowBuilder
-from utils.update_agent_instructions import update_agent_instructions
+from maf.update_agent_instructions import update_agent_instructions
 
-from utils.nodes import (
+from maf.nodes import (
     parallel_search_executor,
     parallel_summary_executor,
     prepare_research_input,
     research_report_agent,
     peer_review_loop,
 )
-from utils.agents import planner_agent, cleanup_all_agents
+from maf.agents import planner_agent, cleanup_all_agents
 
 
 async def main():
