@@ -21,6 +21,7 @@ from maf.agents import planner_agent, cleanup_all_agents
 async def main():
     update_agent_instructions()
 
+    # TODO: adding a conditional node in the review logic
     workflow = (
         WorkflowBuilder()
         .set_start_executor(planner_agent)
