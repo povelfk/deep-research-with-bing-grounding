@@ -42,7 +42,6 @@ async def main():
         # Render Markdown in terminal
         console = Console()
         console.print(Markdown(final_report))
-        # print(final_report)
     except Exception as e:
         print(f"Error during workflow execution: {e}")
         raise
