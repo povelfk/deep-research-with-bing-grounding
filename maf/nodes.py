@@ -65,8 +65,8 @@ async def retry_with_backoff(
     raise last_exception
 
 
-@executor(id="parallel_search_executor")
-async def parallel_search_executor(
+@executor(id="search_executor")
+async def search_executor(
     response: AgentExecutorResponse,
     ctx: WorkflowContext[list],
 ) -> WorkflowContext[list]:
@@ -78,7 +78,7 @@ async def parallel_search_executor(
     await ctx.shared_state.set("research_plan", research_plan)
     total_queries = sum(len(task.search_queries) for task in research_plan.research_tasks)
     print(
-        "[ParallelSearchExecutor] Stored research plan in shared state "
+        "[SearchExecutor] Stored research plan in shared state "
         f"({len(research_plan.research_tasks)} tasks, {total_queries} queries)"
     )
 
@@ -104,31 +104,6 @@ async def parallel_search_executor(
             "results": [],  # Populate with citation extraction if desired
         }
 
-    # Old approach: Create flat list of all tasks, then restructure results
-    # tasks = [
-    #     search_single_query(task.subtopic, query)
-    #     for task in research_plan.research_tasks
-    #     for query in task.search_queries
-    # ]
-    # all_results = await asyncio.gather(*tasks, return_exceptions=True)
-    #
-    # search_results = []
-    # idx = 0
-    # for task in research_plan.research_tasks:
-    #     subtopic_payload = {"subtopic": task.subtopic, "queries": []}
-    #     for query in task.search_queries:
-    #         result = all_results[idx]
-    #         if isinstance(result, Exception):
-    #             print(f"Error for query '{query}': {result}")
-    #             subtopic_payload["queries"].append(
-    #                 {"query": query, "results": [], "error": str(result)}
-    #             )
-    #         else:
-    #             subtopic_payload["queries"].append(result)
-    #         idx += 1
-    #     search_results.append(subtopic_payload)
-
-    # Better approach: Run ALL queries in parallel, then restructure with clear mapping
     # Step 1: Create ALL coroutines at once (fully parallel execution)
     all_task_coroutines = []
     task_query_mapping = []  # Track which results belong to which task
@@ -162,19 +137,19 @@ async def parallel_search_executor(
         search_results.append(subtopic_payload)
 
     total_searches = sum(len(subtopic["queries"]) for subtopic in search_results)
-    print(f"[ParallelSearchExecutor] Completed {total_searches} searches")
+    print(f"[SearchExecutor] Completed {total_searches} searches")
     await ctx.send_message(search_results)
     return ctx
 
 
-@executor(id="parallel_summary_executor")
-async def parallel_summary_executor(
+@executor(id="summary_executor")
+async def summary_executor(
     search_results: list,
     ctx: WorkflowContext[list],
 ) -> WorkflowContext[list]:
     """Summarize each subtopic concurrently."""
 
-    print(f"[ParallelSummaryExecutor] Summarizing {len(search_results)} subtopics...")
+    print(f"[SummaryExecutor] Summarizing {len(search_results)} subtopics...")
 
     async def summarize_subtopic(subtopic_result: dict) -> dict:
         responses = [
@@ -217,7 +192,7 @@ async def parallel_summary_executor(
         *(summarize_subtopic(result) for result in search_results)
     )
 
-    print(f"[ParallelSummaryExecutor] Completed {len(mapped_chunks)} summaries")
+    print(f"[SummaryExecutor] Completed {len(mapped_chunks)} summaries")
     await ctx.send_message(mapped_chunks)
     return ctx
 

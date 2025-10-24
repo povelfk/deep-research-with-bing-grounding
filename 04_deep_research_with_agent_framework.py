@@ -9,8 +9,8 @@ from agent_framework import WorkflowBuilder
 from maf.update_agent_instructions import update_agent_instructions
 
 from maf.nodes import (
-    parallel_search_executor,
-    parallel_summary_executor,
+    search_executor,
+    summary_executor,
     prepare_research_input,
     research_report_agent,
     peer_review_loop,
@@ -25,9 +25,9 @@ async def main():
     workflow = (
         WorkflowBuilder()
         .set_start_executor(planner_agent)
-        .add_edge(planner_agent, parallel_search_executor)
-        .add_edge(parallel_search_executor, parallel_summary_executor)
-        .add_edge(parallel_summary_executor, prepare_research_input)
+        .add_edge(planner_agent, search_executor)
+        .add_edge(search_executor, summary_executor)
+        .add_edge(summary_executor, prepare_research_input)
         .add_edge(prepare_research_input, research_report_agent)
         .add_edge(research_report_agent, peer_review_loop)
         .build()
