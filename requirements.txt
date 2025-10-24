@@ -14,4 +14,6 @@ trafilatura
 azure-identity==1.20.0
 # azure-ai-projects==1.0.0b7
 azure-ai-projects==1.0.0b11
-semantic-kernel
+agent-framework
+agent-framework[azure-ai]
+graphviz
