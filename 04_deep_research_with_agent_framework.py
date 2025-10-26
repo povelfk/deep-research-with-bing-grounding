@@ -11,25 +11,27 @@ from maf.update_agent_instructions import update_agent_instructions
 from maf.nodes import (
     search_executor,
     summary_executor,
-    prepare_research_input,
+    # prepare_research_input,
     research_report_agent,
-    peer_review_loop,
+    research_report_executor,
+    # peer_review_loop,
+    get_verdict,
+    output_final_report
 )
-from maf.agents import planner_agent, cleanup_all_agents
+from maf.agents import planner_agent, peer_review_agent, cleanup_all_agents
 
 
 async def main():
     update_agent_instructions()
-
-    # TODO: adding a conditional node in the review logic
     workflow = (
         WorkflowBuilder()
         .set_start_executor(planner_agent)
         .add_edge(planner_agent, search_executor)
         .add_edge(search_executor, summary_executor)
-        .add_edge(summary_executor, prepare_research_input)
-        .add_edge(prepare_research_input, research_report_agent)
-        .add_edge(research_report_agent, peer_review_loop)
+        .add_edge(summary_executor, research_report_executor)
+        .add_edge(research_report_executor, peer_review_agent)
+        .add_edge(peer_review_agent, output_final_report, condition=get_verdict(True)) # If satisfactory (True), output the final report and end
+        .add_edge(peer_review_agent, research_report_executor, condition=get_verdict(False)) # If not satisfactory (False), loop back to research_report_agent
         .build()
     )
 

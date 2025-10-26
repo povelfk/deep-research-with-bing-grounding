@@ -3,6 +3,7 @@ from agent_framework import (
     WorkflowContext,
     AgentExecutorResponse,
     AgentExecutorRequest,
+    AgentRunResponse,
     ChatMessage,
     Role,
     WorkflowBuilder,
@@ -24,8 +25,7 @@ from common.utils_research import preprocess_research_data
 from maf.agents import (
     bing_search_agent,
     summary_agent,
-    research_report_agent,
-    peer_review_agent,
+    research_report_agent
 ) 
 
 
@@ -197,86 +197,125 @@ async def summary_executor(
     return ctx
 
 
-@executor(id="prepare_research_input")
-async def prepare_research_input(
-    mapped_chunks: list,
-    ctx: WorkflowContext[AgentExecutorRequest],
-) -> WorkflowContext[AgentExecutorRequest]:
-    """Turn summaries + plan into a prompt for the report agent."""
+@executor(id="research_report_executor")
+async def research_report_executor(
+    input_data: list | AgentExecutorResponse,
+    ctx: WorkflowContext[AgentExecutorResponse],
+) -> WorkflowContext[AgentExecutorResponse]:
+    """Execute research report agent for initial generation or revision, and store result in shared state."""
+    
+    # Determine if this is initial generation or revision
+    if isinstance(input_data, list):
+        # Initial generation: input_data is mapped_chunks
+        print("[ResearchReportExecutor] Initial report generation")
+        
+        research_plan = await ctx.shared_state.get("research_plan")
+        if research_plan is None:
+            raise ValueError("Research plan not found in shared state")
 
-    research_plan = await ctx.shared_state.get("research_plan")
-    if research_plan is None:
-        raise ValueError("Research plan not found in shared state")
+        research_input = preprocess_research_data(research_plan, input_data)
+        research_input_prompt = json.dumps(research_input, indent=2)
 
-    research_input = preprocess_research_data(research_plan, mapped_chunks)
-    research_input_prompt = json.dumps(research_input, indent=2)
+        research_query = (
+            "Create an exceptionally comprehensive, **paragraph-focused** and detailed research report "
+            "using the following content. **Minimize bullet points** and ensure the final text resembles "
+            "a cohesive, academic-style paper:\n\n"
+            f"{research_input_prompt}\n\n"
+            "As a final reminder, don't forget to include the citation list at the end of the report."
+        )
+        
+    elif isinstance(input_data, AgentExecutorResponse):
+        # Revision: input_data is peer review feedback
+        print("[ResearchReportExecutor] Report revision based on peer review")
+        
+        try:
+            feedback_text = input_data.agent_run_response.text
+            feedback = PeerReviewFeedback.model_validate_json(feedback_text)
+        except Exception as e:
+            print(f"[ResearchReportExecutor] Warning: Could not parse feedback: {e}")
+            feedback_text = input_data.agent_run_response.text
+        
+        research_query = (
+            "Peer review feedback:\n"
+            f"{feedback_text}\n\n"
+            "Please revise the research report based on the feedback provided."
+        )
+    else:
+        raise TypeError(f"Unexpected input type: {type(input_data)}")
 
-    research_query = (
-        "Create an exceptionally comprehensive, **paragraph-focused** and detailed research report "
-        "using the following content. **Minimize bullet points** and ensure the final text resembles "
-        "a cohesive, academic-style paper:\n\n"
-        f"{research_input_prompt}\n\n"
-        "As a final reminder, don't forget to include the citation list at the end of the report."
+    # Run the research report agent (pass the query string, not the request object)
+    agent_response = await research_report_agent.run(research_query)
+    
+    # Parse and store the report in shared state
+    try:
+        report_text = agent_response.text if hasattr(agent_response, 'text') else str(agent_response)
+        report = ComprehensiveResearchReport.model_validate_json(report_text)
+        
+        # Store in shared state for later retrieval
+        await ctx.shared_state.set("latest_research_report", report.research_report)
+        print("[ResearchReportExecutor] Stored latest report in shared state")
+        
+    except Exception as e:
+        print(f"[ResearchReportExecutor] Warning: Could not parse/store report: {e}")
+    
+    # Create response and send message
+    response = AgentExecutorResponse(
+        agent_run_response=agent_response,
+        executor_id="research_report_executor"
     )
-
-    request = AgentExecutorRequest(
-        messages=[ChatMessage(Role.USER, text=research_query)],
-        should_respond=True,
-    )
-    await ctx.send_message(request)
+    await ctx.send_message(response)
     return ctx
 
 
-@executor(id="peer_review_loop")
-async def peer_review_loop(
-    report_response: AgentExecutorResponse,
+def get_verdict(expected_result: bool):
+    def condition(message: Any) -> bool:
+        response_test = None
+
+        # Case 1: AgentExecutorResponse (from @executor-wrapped agents)
+        if isinstance(message, AgentExecutorResponse):
+            response_text = message.agent_run_response.text
+        # Case 2: Direct response object with .text attribute (from ChatAgent)
+        elif hasattr(message, 'text'):
+            response_text = message.text
+        # Case 3: Result object (from streaming)
+        elif hasattr(message, 'result') and hasattr(message.result, 'text'):
+            response_text = message.result.text
+        # Case 4: Response attribute
+        elif hasattr(message, 'response') and hasattr(message.response, 'text'):
+            response_text = message.response.text
+        else:
+            # If we can't extract text, allow the edge to pass to avoid workflow deadlock
+            print(f"[get_verdict] Warning: Could not extract text from message type {type(message)}")
+            return True
+        try:
+            feedback = PeerReviewFeedback.model_validate_json(response_text)
+            result = feedback.is_satisfactory == expected_result
+            print(f"[get_verdict] is_satisfactory={feedback.is_satisfactory}, expected={expected_result}, match={result}")
+            return result
+        except Exception:
+            return False
+        
+    return condition
+
+
+@executor(id="output_final_report")
+async def output_final_report(
+    review_response: AgentExecutorResponse,
     ctx: WorkflowContext,
 ) -> None:
-    """Iteratively improve the report until peer review approves."""
-
-    max_iterations = 10
-
-    for iteration in range(1, max_iterations + 1):
-        report_text = report_response.agent_run_response.text
-        report = ComprehensiveResearchReport.model_validate_json(report_text)
-
-        review_prompt = (
-            "A research agent has produced a research report. Please review it:\n\n"
-            f"{report_text}"
-        )
-        review_response = await retry_with_backoff(
-            peer_review_agent.run,
-            review_prompt,
-            max_retries=3,
-            initial_delay=2.0
-        )
-        feedback = PeerReviewFeedback.model_validate_json(review_response.text)
-
-        if feedback.is_satisfactory:
-            print(f"[PeerReviewLoop] Report approved after {iteration} iteration(s)")
-            await ctx.yield_output(report.research_report)
-            return
-
-        print(f"[PeerReviewLoop] Iteration {iteration}: Revising based on feedback")
-        revision_prompt = (
-            "Peer review feedback:\n"
-            f"{review_response.text}\n\n"
-            "Please revise the research report."
-        )
-        revised_response = await retry_with_backoff(
-            research_report_agent.run,
-            revision_prompt,
-            max_retries=3,
-            initial_delay=2.0
-        )
-
-        @dataclass
-        class _TempAgentExecutorResponse:
-            agent_run_response: object
-            executor_id: str = "research_report_agent"
-            full_conversation: list | None = None
-
-        report_response = _TempAgentExecutorResponse(agent_run_response=revised_response)
-
-    print("[PeerReviewLoop] Max iterations reached")
-    await ctx.yield_output(report.research_report if report else report_text)
+    """Extract and output the final research report from shared state."""
+    
+    try:
+        # Get the latest report from shared state
+        latest_report = await ctx.shared_state.get("latest_research_report")
+        
+        if latest_report:
+            print("[OutputFinalReport] Extracting final report from shared state")
+            await ctx.yield_output(latest_report)
+        else:
+            print("[OutputFinalReport] Error: Could not find latest research report in shared state")
+            await ctx.yield_output("Error: Report not found")
+            
+    except Exception as e:
+        print(f"[OutputFinalReport] Error: {e}")
+        await ctx.yield_output(f"Error: {e}")
