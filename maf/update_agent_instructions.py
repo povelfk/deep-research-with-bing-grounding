@@ -19,7 +19,7 @@ import datetime
 current_date = datetime.datetime.now().strftime("%Y-%m-%d")
 
 
-def update_planner_instructions(agent, min_subtopics=3, min_search_queries_per_subtopic=3, min_success_criteria=3, min_related_topics=3):
+def update_planner_instructions(agent, min_subtopics=1, min_search_queries_per_subtopic=1, min_success_criteria=1, min_related_topics=1):
     agent.instructions=f"""
 Today's date is {current_date}.
 
