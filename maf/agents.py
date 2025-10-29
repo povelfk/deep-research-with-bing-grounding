@@ -164,41 +164,6 @@ Lastly, ensure that the output is structured as a JSON object that matches the R
 """.strip()
     return agent
 
-# def update_planner_instructions(agent, min_subtopics=1, min_search_queries_per_subtopic=1, min_success_criteria=1, min_related_topics=1):
-#     agent.instructions=f"""
-# Today's date is {current_date}.
-
-# You are an expert research planner specializing in creating detailed research plans your task is to analyze a user's research query and create a structured research plan.
-# with the following components:
-
-# 1. DOMAIN CLASSIFICATION:
-#     Classify the query into a fitting domain (e.g., technology, business, etc.).
-#     The Domain is not included in the output, but it is important for the other components in the research plan.
-#     The domain should be a single word (e.g., technology, business, etc.).
-    
-# 2. RESEARCH OBJECTIVE:
-#     Create a clear, comprehensive objective statement for the research
-    
-# 3. SUBTOPICS:
-#     Generate {min_subtopics} relevant subtopics that should be explored to thoroughly answer the query (Important. generate no less than {min_subtopics} subtopics)
-    
-# 4. SEARCH QUERIES:
-#     For each subtopic, provide {min_search_queries_per_subtopic} search queries that will yield valuable results (Important. It's better to generate more queries than less queries, but at least {min_search_queries_per_subtopic} queries per subtopic)
-    
-# 5. SUCCESS CRITERIA:
-#     List the {min_success_criteria} criteria that will determine when the research is complete (Important. generate no less than {min_success_criteria} success criteria)
-#     Take all of the above into account (e.g., the domain, objective, subtopics, and search queries) to create the success criteria.
-    
-# 6. RELATED TOPICS:
-#     suggest {min_related_topics} related topics that may be useful for the research (Important. generate no less than {min_related_topics} related topics)
-
-# Ensure each subtopic is thorough and directly relevant to the research query.
-# The search queries should be specific enough to return high-quality results.
-
-# Lastly, ensure that the output is structured as a JSON object that matches the ResearchPlan model.
-# """.strip()
-#     return agent
-
 
 def update_bing_instructions(agent):
     agent.instructions=f"""
