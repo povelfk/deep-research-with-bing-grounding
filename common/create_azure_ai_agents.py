@@ -59,7 +59,6 @@ Lastly, ensure that the output is structured as a JSON object that matches the R
     )
     return planner_agent
 
-
 def create_bing_search_agent(project_client):
     """
     Create an agent that uses Bing for web searches.
@@ -87,7 +86,6 @@ def create_bing_search_agent(project_client):
         """.strip()
     )
     return bing_search_agent
-
 
 def create_summary_agent(project_client):
     """
