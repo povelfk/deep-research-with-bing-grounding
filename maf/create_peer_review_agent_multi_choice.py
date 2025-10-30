@@ -1,10 +1,8 @@
+import os
 import dotenv
-dotenv.load_dotenv(".env", override=True)
 
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
-import os
-
 
 def create_peer_review_agent_multi_choice(project_client):
     """
@@ -84,11 +82,17 @@ def create_peer_review_agent_multi_choice(project_client):
     )
     return peer_review_agent_multi_choice
 
+def get_project_client(project_endpoint):
+    return AIProjectClient(
+        credential=DefaultAzureCredential(),
+        endpoint=project_endpoint
+    )
 
-project_client = AIProjectClient(
-    credential=DefaultAzureCredential(),
-    endpoint=os.getenv("PROJECT_ENDPOINT")
-)
+def main():
+    dotenv.load_dotenv("../.env", override=True)
+    project_client = get_project_client(os.getenv("PROJECT_ENDPOINT"))
+    create_peer_review_agent_multi_choice(project_client=project_client)
 
 
-peer_review_agent = create_peer_review_agent_multi_choice(project_client=project_client)
+if __name__ == '__main__':
+    main()

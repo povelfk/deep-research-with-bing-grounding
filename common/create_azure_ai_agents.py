@@ -2,6 +2,12 @@ from azure.ai.agents.models import BingGroundingTool
 import datetime
 import os
 
+import dotenv
+dotenv.load_dotenv(".env", override=True)
+
+from azure.ai.projects import AIProjectClient
+from azure.identity import DefaultAzureCredential
+
 def create_research_plan_agent(project_client):
     """
     Create an agent that generates detailed research plans based on user queries.
@@ -259,3 +265,25 @@ def create_peer_review_agent(project_client):
         )
     )
     return peer_review_agent
+
+def create_agents(project_client):
+    create_research_plan_agent(project_client)
+    create_bing_search_agent(project_client)
+    create_summary_agent(project_client)
+    create_research_report_agent(project_client)
+    create_peer_review_agent(project_client)
+
+def get_project_client(project_endpoint):
+    return AIProjectClient(
+        credential=DefaultAzureCredential(),
+        endpoint=project_endpoint
+    )
+
+def main():
+    project_client = get_project_client(project_endpoint=os.getenv("PROJECT_ENDPOINT"))
+    create_agents(project_client)
+
+if __name__ == '__main__':
+    main()
+
+

@@ -7,6 +7,8 @@ from rich.markdown import Markdown
 
 from agent_framework import WorkflowBuilder, Case, Default
 from maf.update_agent_instructions import update_agent_instructions
+from common.create_azure_ai_agents import create_agents, get_project_client
+from maf.create_peer_review_agent_multi_choice import create_peer_review_agent_multi_choice
 
 from maf.nodes import (
     search_executor,
@@ -20,16 +22,10 @@ from maf.nodes import (
 from maf.agents import planner_agent, peer_review_agent_multi_choice, cleanup_all_agents
 from common.data_models import NextAction
 
-# Multi-choice routing system implemented using switch-case pattern
-# The peer review agent now intelligently routes to specific agents based on NextAction enum:
-# - COMPLETE: Output final report and end workflow
-# - REVISE_REPORT: Route back to research_report_executor (reuses existing executor)
-# - GATHER_MORE_DATA: Route back to search_executor (reuses existing executor)
-#
-# ITERATION LIMIT: The workflow enforces a maximum of 3 revision/data gathering cycles
-# to prevent infinite loops. After 3 iterations, the workflow will force completion.
 
 async def main():
+    ### IMPORTANT ###
+    # Before running this file, make sure to run 00_create_agents.py to create the agents in Azure AI Foundry and copy their IDs to your .env file
     update_agent_instructions()
     workflow = (
         WorkflowBuilder()
@@ -39,7 +35,6 @@ async def main():
         .add_edge(summary_executor, research_report_executor)
         .add_edge(research_report_executor, peer_review_agent_multi_choice)
         .add_edge(peer_review_agent_multi_choice, to_routing_decision)
-        # Switch-case routing based on NextAction enum
         .add_switch_case_edge_group(
             to_routing_decision,
             [
@@ -49,9 +44,6 @@ async def main():
                 Default(target=handle_routing_error),
             ]
         )
-        # Note: No duplicate edges needed! 
-        # - research_report_executor always goes to peer_review (already defined above)
-        # - search_executor always goes to summary (already defined above)
         .build()
     )
 
@@ -73,4 +65,5 @@ async def main():
         await cleanup_all_agents()
 
 if __name__ == "__main__":
+
     asyncio.run(main())
