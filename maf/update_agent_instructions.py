@@ -11,7 +11,7 @@ planner_agent = project_client.agents.get_agent(agent_id=os.getenv("PlannerAgent
 bing_search_agent = project_client.agents.get_agent(agent_id=os.getenv("BingSearchAgentID"))
 summary_agent = project_client.agents.get_agent(agent_id=os.getenv("SummaryAgentID"))
 research_report_agent = project_client.agents.get_agent(agent_id=os.getenv("ResearchAgentID"))
-peer_review_agent = project_client.agents.get_agent(agent_id=os.getenv("PeerReviewAgentID"))
+peer_review_agent_multi_choice = project_client.agents.get_agent(agent_id=os.getenv("PeerReviewAgentMultiChoiceID"))
 
 
 import datetime
@@ -172,10 +172,11 @@ def update_research_instructions(agent):
     return agent
 
 
-def update_peer_review_instructions(agent):
+def update_peer_review_multi_choice_instructions(agent):
     agent.instructions=(
         "You are a critical yet constructive peer reviewer evaluating research reports. "
-        "Your goal is to provide detailed, actionable feedback using a structured evaluation framework.\n\n"
+        "Your goal is to provide detailed, actionable feedback using a structured evaluation framework "
+        "and intelligent routing to the appropriate next step.\n\n"
         
         "## Evaluation Framework:\n"
         "1. COMPLETENESS (0-10): Does the report thoroughly cover all aspects of the research topic?\n"
@@ -203,11 +204,28 @@ def update_peer_review_instructions(agent):
         "- In your overall assessment, calculate a total score (0-40)\n"
         "- Reports scoring 32+ (80%) can be marked as satisfactory\n"
         "- For reports below 32, provide clear, prioritized improvement suggestions\n"
-        "- Be constructive and specific - point to exact sections that need improvement\n"
+        "- Be constructive and specific - point to exact sections that need improvement\n\n"
         
-        "\n\n## Important Rules:"
-        "\n- If the report meets all quality standards (score ≥32), simply confirm this by changing the is_satisfactory field to true and hand it back to ResearchAgent."
-        "\n- Always perform a handoff to ResearchAgent for final report generation."
+        "## Intelligent Routing (next_action field):\n"
+        "You must set the 'next_action' field to route the workflow appropriately:\n\n"
+        
+        "- **complete**: Report meets all quality standards (score ≥32). Set is_satisfactory=true.\n"
+        "  Use when: Report is comprehensive, well-structured, properly cited, and provides valuable analysis.\n\n"
+        
+        "- **revise_report**: Report needs content/structure improvements but no new data required.\n"
+        "  Use when: Writing quality issues, structural problems, analysis gaps, citation formatting issues.\n"
+        "  Provide specific suggestions in suggested_improvements field.\n\n"
+        
+        "- **gather_more_data**: Report lacks sufficient information or data to meet objectives.\n"
+        "  Use when: Missing key facts, outdated information, insufficient coverage of subtopics.\n"
+        "  Provide specific research queries in additional_queries field (e.g., 'Recent AI adoption statistics in healthcare').\n\n"
+        
+        "## Important Rules:\n"
+        "- Always fill the next_action field with one of: complete, revise_report, or gather_more_data\n"
+        "- When next_action is NOT 'complete', provide detailed next_action_details\n"
+        "- For gather_more_data, populate additional_queries with specific search queries\n"
+        "- For revise_report, populate suggested_improvements with actionable feedback\n"
+        "- Your output must be valid JSON matching the PeerReviewFeedbackMultiChoice schema"
     ).strip()
 
     project_client.agents.update_agent(
@@ -223,12 +241,12 @@ def update_agent_instructions(
         bing_search_agent=bing_search_agent,
         summary_agent=summary_agent, 
         research_report_agent=research_report_agent, 
-        peer_review_agent=peer_review_agent):
+        peer_review_agent=peer_review_agent_multi_choice):
     update_planner_instructions(planner_agent)
     update_bing_instructions(bing_search_agent)
     update_summary_instructions(summary_agent)
     update_research_instructions(research_report_agent)
-    update_peer_review_instructions(peer_review_agent)
+    update_peer_review_multi_choice_instructions(peer_review_agent)
 
     project_client.agents.update_agent(
     agent_id=planner_agent.id,
