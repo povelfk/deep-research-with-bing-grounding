@@ -1,4 +1,5 @@
 from typing import List, Optional
+from enum import Enum
 from pydantic import BaseModel, Field
 
 class ResearchTask(BaseModel):
@@ -51,3 +52,29 @@ class PeerReviewFeedback(BaseModel):
     additional_queries: Optional[List[str]] = Field(default=None, description="Additional research queries that could strengthen the report.")
     is_satisfactory: bool = Field(..., description="Indicates if the report meets all quality standards and no further revisions are needed.")
     provided_report: Optional[ComprehensiveResearchReport] = Field(default=None, description="The report that **was** reviewed. Should only be provided if the report needs to be sent back to the Research Agent.")
+
+class NextAction(str, Enum):
+    """Enum defining which agent should handle the next step based on peer review feedback."""
+    COMPLETE = "complete"  # Report is satisfactory, no further action needed
+    REVISE_REPORT = "revise_report"  # Route back to research_report_agent for revision
+    GATHER_MORE_DATA = "gather_more_data"  # Route back to search_executor for additional research
+
+class PeerReviewFeedbackMultiChoice(BaseModel):
+    """Enhanced peer review feedback model with intelligent routing to specific agents."""
+    overall_feedback: Optional[str] = Field(default=None, description="General feedback on the report.")
+    strengths: Optional[List[str]] = Field(default=None, description="Aspects of the report that are well done.")
+    suggested_improvements: Optional[List[str]] = Field(default=None, description="Specific suggestions to improve clarity, completeness, accuracy, or structure.")
+    additional_queries: Optional[List[str]] = Field(default=None, description="Additional research queries that could strengthen the report.")
+    is_satisfactory: bool = Field(..., description="Indicates if the report meets all quality standards and no further revisions are needed.")
+    next_action: NextAction = Field(..., description=(
+        "Determines which agent should handle the next step:\n"
+        "- COMPLETE: Report is satisfactory, workflow ends\n"
+        "- REVISE_REPORT: Route to research_report_agent for content/structure improvements\n"
+        "- GATHER_MORE_DATA: Route to search_executor for additional research on specific topics\n"
+    ))
+    next_action_details: Optional[str] = Field(default=None, description=(
+        "Specific details about what needs to be addressed:\n"
+        "- For REVISE_REPORT: Explain what aspects need improvement (e.g., 'Add more analysis in the methodology section')\n"
+        "- For GATHER_MORE_DATA: Specify what topics need more research (e.g., 'Need more recent statistics on AI adoption rates')\n"
+    ))
+    provided_report: Optional[ComprehensiveResearchReport] = Field(default=None, description="The report that was reviewed. Include when routing back for revisions.")

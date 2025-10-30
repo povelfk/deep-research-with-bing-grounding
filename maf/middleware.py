@@ -6,7 +6,7 @@ from agent_framework import (
 )
 
 
-from common.data_models import ResearchPlan, ComprehensiveResearchReport, PeerReviewFeedback
+from common.data_models import ResearchPlan, ComprehensiveResearchReport, PeerReviewFeedback, PeerReviewFeedbackMultiChoice
 
 @function_middleware
 async def logging_function_middleware(context, next):
@@ -128,3 +128,37 @@ async def validate_and_parse_peer_review_middleware(context, next):
         except Exception as e:
             print(f"[PeerReviewMiddleware] ✗ Validation failed: {e}")
             raise ValueError(f"Agent output does not match PeerReviewFeedback schema: {e}")
+
+
+@agent_middleware
+async def validate_and_parse_peer_review_multi_choice_middleware(context, next):
+    """Agent middleware that validates and parses PeerReviewFeedbackMultiChoice output into a Pydantic object."""
+    agent_name = context.agent.name if hasattr(context.agent, 'name') else 'Unknown'
+    print(f"[PeerReviewMultiChoiceMiddleware] Agent {agent_name} starting...")
+
+    start_time = time.time()
+    await next(context)
+    duration = time.time() - start_time
+
+    # Handle both streaming (context.result) and non-streaming (context.response)
+    response_text = None
+    if hasattr(context, 'result') and context.result and hasattr(context.result, 'text'):
+        response_text = context.result.text
+    elif hasattr(context, 'response') and context.response and hasattr(context.response, 'text'):
+        response_text = context.response.text
+    
+    if response_text:
+        try:
+            # Parse JSON string into PeerReviewFeedbackMultiChoice Pydantic object
+            feedback = PeerReviewFeedbackMultiChoice.model_validate_json(response_text)
+            
+            # Store the parsed object
+            context.parsed_output = feedback
+            
+            satisfactory_status = "✓ Satisfactory" if feedback.is_satisfactory else "⚠️  Needs revision"
+            print(f"[PeerReviewMultiChoiceMiddleware] ✓ Valid PeerReviewFeedbackMultiChoice - {satisfactory_status}")
+            print(f"[PeerReviewMultiChoiceMiddleware] Next action: {feedback.next_action.value}")
+            print(f"[PeerReviewMultiChoiceMiddleware] ⏱️  Completed in {duration:.2f}s")
+        except Exception as e:
+            print(f"[PeerReviewMultiChoiceMiddleware] ✗ Validation failed: {e}")
+            raise ValueError(f"Agent output does not match PeerReviewFeedbackMultiChoice schema: {e}")
