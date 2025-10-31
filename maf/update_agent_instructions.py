@@ -19,7 +19,7 @@ import datetime
 current_date = datetime.datetime.now().strftime("%Y-%m-%d")
 
 
-def update_planner_instructions(agent, min_subtopics=1, min_search_queries_per_subtopic=1, min_success_criteria=1, min_related_topics=1):
+def update_planner_instructions(agent, num_subtopics=3, num_search_queries_per_subtopic=2, num_success_criteria=1, num_related_topics=1):
     agent.instructions=f"""
 Today's date is {current_date}.
 
@@ -35,17 +35,21 @@ with the following components:
     Create a clear, comprehensive objective statement for the research
     
 3. SUBTOPICS:
-    Generate EXACTLY {min_subtopics} relevant subtopics (NO MORE, NO LESS)
+    Generate EXACTLY {num_subtopics} relevant subtopics (NO MORE, NO LESS)
     
 4. SEARCH QUERIES:
-    For each subtopic, provide EXACTLY {min_search_queries_per_subtopic} search queries (NO MORE, NO LESS)
+    For each subtopic, provide EXACTLY {num_search_queries_per_subtopic} search queries (NO MORE, NO LESS)
     
 5. SUCCESS CRITERIA:
-    List EXACTLY {min_success_criteria} criteria that will determine when the research is complete (NO MORE, NO LESS)
+    List EXACTLY {num_success_criteria} criteria that will determine when the research is complete (NO MORE, NO LESS)
     Take all of the above into account (e.g., the domain, objective, subtopics, and search queries) to create the success criteria.
+    **IMPORTANT**: Success criteria should be practical and achievable within the scope of web research. 
+    Focus on coverage and depth rather than impossible standards like "exhaustive coverage" or "all authoritative sources."
+    Good criteria examples: "Provide clear definitions and comparisons", "Include recent industry examples", "Explain key differences with supporting data"
+    Avoid perfectionist criteria like: "Comprehensive coverage of all aspects", "All latest academic research", "Complete industry consensus"
 
 6. RELATED TOPICS:
-    Suggest EXACTLY {min_related_topics} related topics (NO MORE, NO LESS)
+    Suggest EXACTLY {num_related_topics} related topics (NO MORE, NO LESS)
 
 Ensure each subtopic is thorough and directly relevant to the research query.
 The search queries should be specific enough to return high-quality results.
@@ -179,46 +183,53 @@ def update_peer_review_multi_choice_instructions(agent):
         "and intelligent routing to the appropriate next step.\n\n"
         
         "## Evaluation Framework:\n"
-        "1. COMPLETENESS (0-10): Does the report thoroughly cover all aspects of the research topic?\n"
-        "   - Are all required subtopics adequately addressed?\n"
-        "   - Is there sufficient depth in each section (500+ words per major section)?\n"
-        "   - Are there any obvious gaps or missing perspectives?\n\n"
+        "Evaluate the report on these criteria, scoring pragmatically:\n\n"
         
-        "2. CLARITY & STRUCTURE (0-10): Is the report well-organized and clearly written?\n"
-        "   - Does it have a logical flow with clear sections and subsections?\n"
-        "   - Are complex concepts explained in accessible language?\n"
-        "   - Does it use formatting effectively (headings, lists, tables)?\n\n"
+        "1. COMPLETENESS (0-10): Does the report cover the key aspects?\n"
+        "   - Are the main subtopics addressed with reasonable depth?\n"
+        "   - Is there sufficient content (not necessarily exhaustive)?\n"
+        "   - Score 7-8: Good coverage of main topics | Score 9-10: Exceptional depth\n\n"
         
-        "3. EVIDENCE & SUPPORT (0-10): Is information well-supported?\n"
-        "   - Are claims backed by data, statistics, or authoritative sources?\n"
-        "   - Are citations used appropriately and consistently?\n"
-        "   - Does it include multiple perspectives when appropriate?\n\n"
+        "2. CLARITY & STRUCTURE (0-10): Is the report well-organized?\n"
+        "   - Logical flow with clear sections?\n"
+        "   - Readable and well-formatted?\n"
+        "   - Score 7-8: Well-structured and clear | Score 9-10: Exemplary organization\n\n"
         
-        "4. ANALYSIS & INSIGHT (0-10): Does the report provide valuable analysis?\n"
-        "   - Does it go beyond summarizing to provide meaningful insights?\n"
-        "   - Does it connect ideas across different sections?\n"
-        "   - Does it identify implications and future directions?\n\n"
+        "3. EVIDENCE & SUPPORT (0-10): Are claims reasonably supported?\n"
+        "   - Do key claims have supporting data or sources?\n"
+        "   - Are citations present and appropriate (doesn't need to be exhaustive)?\n"
+        "   - Score 7-8: Adequately cited with good sources | Score 9-10: Extensive authoritative citations\n\n"
+        
+        "4. ANALYSIS & INSIGHT (0-10): Does it provide useful analysis?\n"
+        "   - Goes beyond surface-level summary?\n"
+        "   - Provides practical insights or connections?\n"
+        "   - Score 7-8: Good analysis with practical value | Score 9-10: Deep, sophisticated insights\n\n"
         
         "## Response Guidelines:\n"
-        "- For each criterion, provide a score (0-10) and specific feedback citing examples from the report\n"
-        "- In your overall assessment, calculate a total score (0-40)\n"
-        "- Reports scoring 32+ (80%) can be marked as satisfactory\n"
-        "- For reports below 32, provide clear, prioritized improvement suggestions\n"
-        "- Be constructive and specific - point to exact sections that need improvement\n\n"
+        "- Calculate total score (0-40) across the four criteria\n"
+        "- **Scoring Philosophy**: Be reasonable, not perfectionist. A score of 7-8/10 per category indicates a good, useful report.\n"
+        "- **Passing Threshold**: Reports scoring 26+ (65%) should be marked as satisfactory\n"
+        "- Reports scoring 26-29: Good reports that meet objectives with minor areas for improvement\n"
+        "- Reports scoring 30+: Excellent reports with strong analysis and comprehensive coverage\n"
+        "- For reports below 26, identify the 1-2 most critical gaps (don't list everything)\n"
+        "- Remember: The goal is a useful, well-researched report, not academic perfection\n\n"
         
         "## Intelligent Routing (next_action field):\n"
         "You must set the 'next_action' field to route the workflow appropriately:\n\n"
         
-        "- **complete**: Report meets all quality standards (score ≥32). Set is_satisfactory=true.\n"
-        "  Use when: Report is comprehensive, well-structured, properly cited, and provides valuable analysis.\n\n"
+        "- **complete**: Report meets quality standards (score ≥26). Set is_satisfactory=true.\n"
+        "  Use when: Report adequately covers the topic with reasonable depth, structure, and citations.\n"
+        "  Don't chase perfection - if the report is useful and well-researched, approve it.\n\n"
         
         "- **revise_report**: Report needs content/structure improvements but no new data required.\n"
         "  Use when: Writing quality issues, structural problems, analysis gaps, citation formatting issues.\n"
         "  Provide specific suggestions in suggested_improvements field.\n\n"
         
-        "- **gather_more_data**: Report lacks sufficient information or data to meet objectives.\n"
-        "  Use when: Missing key facts, outdated information, insufficient coverage of subtopics.\n"
-        "  Provide specific research queries in additional_queries field (e.g., 'Recent AI adoption statistics in healthcare').\n\n"
+        "- **gather_more_data**: Report has significant information gaps that prevent meeting core objectives.\n"
+        "  Use when: Missing critical facts, major subtopic completely unaddressed, or fundamental data needed.\n"
+        "  **DON'T use for**: Minor citation improvements, wanting \"more authoritative\" sources when good ones exist, or perfectionism.\n"
+        "  Provide 2-3 highly specific research queries in additional_queries field.\n"
+        "  Ask yourself: Will this new data materially improve the report's usefulness? If not, consider 'complete' or 'revise_report'.\n\n"
         
         "## Important Rules:\n"
         "- Always fill the next_action field with one of: complete, revise_report, or gather_more_data\n"
