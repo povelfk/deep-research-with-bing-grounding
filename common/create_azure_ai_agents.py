@@ -5,7 +5,7 @@ import os
 import dotenv
 dotenv.load_dotenv(".env", override=True)
 
-from azure.ai.projects import AIProjectClient
+from azure.ai.projects.aio import AIProjectClient
 from azure.identity import DefaultAzureCredential
 
 def create_research_plan_agent(project_client):
@@ -274,7 +274,16 @@ def create_agents(project_client):
     create_peer_review_agent(project_client)
 
 def get_project_client(project_endpoint):
+    """Get synchronous AIProjectClient for backward compatibility."""
     return AIProjectClient(
+        credential=DefaultAzureCredential(),
+        endpoint=project_endpoint
+    )
+
+def get_async_project_client(project_endpoint):
+    """Get asynchronous AIProjectClient for concurrent operations."""
+    from azure.ai.projects.aio import AIProjectClient as AsyncAIProjectClient
+    return AsyncAIProjectClient(
         credential=DefaultAzureCredential(),
         endpoint=project_endpoint
     )

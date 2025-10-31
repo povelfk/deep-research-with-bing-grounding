@@ -1,15 +1,17 @@
+#################################################################### IMPORTANT ##################################################################
+# Before running this file, make sure to run 00_create_agents.py to create the agents in Azure AI Foundry and copy their IDs to your .env file  #
+#################################################################################################################################################
+
+import asyncio
 import dotenv
 dotenv.load_dotenv(".env", override=True)
 
-import asyncio
-from rich.console import Console
-from rich.markdown import Markdown
-
 from agent_framework import WorkflowBuilder, Case, Default
-from maf.update_agent_instructions import update_agent_instructions
-from common.create_azure_ai_agents import create_agents, get_project_client
-from maf.create_peer_review_agent_multi_choice import create_peer_review_agent_multi_choice
 
+from common.data_models import NextAction
+from maf.helper import save_report
+from maf.update_agent_instructions import update_agent_instructions
+from maf.agents import planner_agent, peer_review_agent_multi_choice, cleanup_all_agents
 from maf.nodes import (
     search_executor,
     summary_executor,
@@ -19,13 +21,8 @@ from maf.nodes import (
     handle_complete,
     handle_routing_error,
 )
-from maf.agents import planner_agent, peer_review_agent_multi_choice, cleanup_all_agents
-from common.data_models import NextAction
-
 
 async def main():
-    ### IMPORTANT ###
-    # Before running this file, make sure to run 00_create_agents.py to create the agents in Azure AI Foundry and copy their IDs to your .env file
     update_agent_instructions()
     workflow = (
         WorkflowBuilder()
@@ -51,11 +48,9 @@ async def main():
 
     try:
         events = await workflow.run(user_query)
-        final_report = events.get_outputs()[0]
-
-        # Render Markdown in terminal
-        console = Console()
-        console.print(Markdown(final_report))
+        outputs = events.get_outputs()
+        final_report = outputs[0]            
+        save_report(final_report)
     except Exception as e:
         print(f"Error during workflow execution: {e}")
         raise

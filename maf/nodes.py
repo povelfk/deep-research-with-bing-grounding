@@ -5,6 +5,7 @@ from agent_framework import (
 )
 import asyncio
 import json
+import os
 from typing import Any, Callable, Union
 from dataclasses import dataclass
 
@@ -16,11 +17,14 @@ from common.data_models import (
     NextAction,
 )
 from common.utils_research import preprocess_research_data
+from common.utils_search import extract_agent_response_and_urls_async
+from common.utils_summary import collect_responses_and_citations
+from common.create_azure_ai_agents import get_async_project_client
 
 from maf.agents import (
-    bing_search_agent,
     summary_agent,
-    research_report_agent
+    research_report_agent,
+    bing_search_agent_client,  # Import the raw client
 )
 
 # Forward declaration for type hints
@@ -124,20 +128,60 @@ async def search_executor(
             "Please provide the information and cite your sources using the available tools."
         )
 
-        # Wrap the agent call with retry logic
-        agent_response = await retry_with_backoff(
-            bing_search_agent.run,
-            prompt,
-            max_retries=3,
-            initial_delay=2.0
-        )
-        agent_text = agent_response.text if hasattr(agent_response, "text") else str(agent_response)
-
-        return {
-            "query": query,
-            "agent_response": agent_text,
-            "results": [],
-        }
+        # Use the async Azure AI Agent client for true parallel execution
+        # This is necessary because ChatAgent doesn't expose thread metadata
+        project_client = get_async_project_client(os.getenv("PROJECT_ENDPOINT"))
+        thread = None
+        
+        try:
+            # Create thread and get agent response
+            thread = await project_client.agents.threads.create()
+            await project_client.agents.messages.create(
+                thread_id=thread.id,
+                role="user",
+                content=prompt
+            )
+            
+            # Run the agent (using the raw client's agent_id)
+            run = await project_client.agents.runs.create_and_process(
+                thread_id=thread.id,
+                agent_id=bing_search_agent_client.agent_id
+            )
+            
+            # Extract response text and citations from thread (async version)
+            agent_text, citations = await extract_agent_response_and_urls_async(project_client, thread.id, query)
+            
+            # Convert citations to the expected format
+            citation_results = [{"title": c["title"], "url": c["url"]} for c in citations]
+            
+            print(f"[SearchExecutor] Extracted {len(citation_results)} citations for query: {query[:50]}...")
+            
+            return {
+                "query": query,
+                "agent_response": agent_text,
+                "results": citation_results,
+            }
+            
+        except Exception as e:
+            print(f"[SearchExecutor] Error for query '{query}': {e}")
+            return {
+                "query": query,
+                "agent_response": "",
+                "results": [],
+                "error": str(e)
+            }
+        finally:
+            # Clean up thread and close client
+            if thread:
+                try:
+                    await project_client.agents.threads.delete(thread_id=thread.id)
+                except Exception:
+                    pass
+            # Close the async client to free resources
+            try:
+                await project_client.close()
+            except Exception:
+                pass
 
     # Execute all searches in parallel
     all_results = await asyncio.gather(
@@ -165,6 +209,9 @@ async def search_executor(
     total_searches = sum(len(subtopic["queries"]) for subtopic in search_results)
     print(f"[SearchExecutor] Completed {total_searches} searches")
     
+    # for testing purposes
+    # await ctx.yield_output(search_results)
+
     await ctx.send_message(search_results)
     return ctx
 
@@ -179,18 +226,18 @@ async def summary_executor(
     print(f"[SummaryExecutor] Summarizing {len(search_results)} subtopics...")
 
     async def summarize_subtopic(subtopic_result: dict) -> dict:
-        responses = [
-            query_data["agent_response"]
-            for query_data in subtopic_result.get("queries", [])
-            if query_data.get("agent_response")
-        ]
-        content = "\n\n---\n\n".join(responses)
+        # Use the same utility function as the notebook for consistency
+        all_responses, unique_citations = collect_responses_and_citations(subtopic_result)
+        content = "\n\n---\n\n".join(all_responses)
+        
+        # Convert set of tuples to list of dicts
+        citations_list = [{"title": title, "url": url} for (title, url) in unique_citations]
 
         if not content:
             return {
                 "subtopic": subtopic_result.get("subtopic", "Unknown"),
                 "summary": "No content found.",
-                "citations": [],
+                "citations": citations_list,
             }
 
         prompt = (
@@ -212,7 +259,7 @@ async def summary_executor(
         return {
             "subtopic": subtopic_result.get("subtopic"),
             "summary": summary_text.strip(),
-            "citations": [],  # Add citation handling if needed
+            "citations": citations_list,
         }
 
     mapped_chunks = await asyncio.gather(
