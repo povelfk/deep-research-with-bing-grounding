@@ -37,7 +37,7 @@ async def simple_logging_agent_middleware(context, next):
 async def validate_and_parse_research_plan_middleware(context, next):
     """Agent middleware that validates and parses ResearchPlan output into a Pydantic object."""
     agent_name = context.agent.name if hasattr(context.agent, 'name') else 'Unknown'
-    print(f"[ResearchPlanMiddleware] Agent {agent_name} starting...")
+    print(f"[ResearchPlanMiddleware] 🚀 Agent {agent_name} starting...")
 
     start_time = time.time()
     await next(context)
@@ -58,10 +58,10 @@ async def validate_and_parse_research_plan_middleware(context, next):
             # Store the parsed object in the context for later use
             context.parsed_output = research_plan
             
-            print(f"[ResearchPlanMiddleware] ✓ Valid ResearchPlan with {len(research_plan.research_tasks)} tasks")
-            print(f"[ResearchPlanMiddleware] ⏱️  Completed in {duration:.2f}s")
+            print(f"[ResearchPlanMiddleware] ✅ Agent {agent_name} completed in {duration:.2f}s")
+            print(f"[ResearchPlanMiddleware]    Valid ResearchPlan with {len(research_plan.research_tasks)} tasks")
         except Exception as e:
-            print(f"[ResearchPlanMiddleware] ✗ Validation failed: {e}")
+            print(f"[ResearchPlanMiddleware] ❌ Validation failed: {e}")
             raise ValueError(f"Agent output does not match ResearchPlan schema: {e}")
 
 
@@ -69,7 +69,7 @@ async def validate_and_parse_research_plan_middleware(context, next):
 async def validate_and_parse_research_report_middleware(context, next):
     """Agent middleware that validates and parses ComprehensiveResearchReport output into a Pydantic object."""
     agent_name = context.agent.name if hasattr(context.agent, 'name') else 'Unknown'
-    print(f"[ResearchReportMiddleware] Agent {agent_name} starting...")
+    print(f"[ResearchReportMiddleware] 🚀 Agent {agent_name} starting...")
 
     start_time = time.time()
     await next(context)
@@ -90,10 +90,10 @@ async def validate_and_parse_research_report_middleware(context, next):
             # Store the parsed object
             context.parsed_output = report
             
-            print(f"[ResearchReportMiddleware] ✓ Valid ComprehensiveResearchReport")
-            print(f"[ResearchReportMiddleware] ⏱️  Completed in {duration:.2f}s")
+            print(f"[ResearchReportMiddleware] ✅ Agent {agent_name} completed in {duration:.2f}s")
+            print(f"[ResearchReportMiddleware]    Valid ComprehensiveResearchReport")
         except Exception as e:
-            print(f"[ResearchReportMiddleware] ✗ Validation failed: {e}")
+            print(f"[ResearchReportMiddleware] ❌ Validation failed: {e}")
             raise ValueError(f"Agent output does not match ComprehensiveResearchReport schema: {e}")
 
 
@@ -134,7 +134,7 @@ async def validate_and_parse_peer_review_middleware(context, next):
 async def validate_and_parse_peer_review_multi_choice_middleware(context, next):
     """Agent middleware that validates and parses PeerReviewFeedbackMultiChoice output into a Pydantic object."""
     agent_name = context.agent.name if hasattr(context.agent, 'name') else 'Unknown'
-    print(f"[PeerReviewMultiChoiceMiddleware] Agent {agent_name} starting...")
+    print(f"[PeerReviewMultiChoiceMiddleware] 🚀 Agent {agent_name} starting...")
 
     start_time = time.time()
     await next(context)
@@ -155,10 +155,10 @@ async def validate_and_parse_peer_review_multi_choice_middleware(context, next):
             # Store the parsed object
             context.parsed_output = feedback
             
-            satisfactory_status = "✓ Satisfactory" if feedback.is_satisfactory else "⚠️  Needs revision"
-            print(f"[PeerReviewMultiChoiceMiddleware] ✓ Valid PeerReviewFeedbackMultiChoice - {satisfactory_status}")
-            print(f"[PeerReviewMultiChoiceMiddleware] Next action: {feedback.next_action.value}")
-            print(f"[PeerReviewMultiChoiceMiddleware] ⏱️  Completed in {duration:.2f}s")
+            satisfactory_status = "Satisfactory" if feedback.is_satisfactory else "Needs revision"
+            print(f"[PeerReviewMultiChoiceMiddleware] ✅ Agent {agent_name} completed in {duration:.2f}s")
+            print(f"[PeerReviewMultiChoiceMiddleware]    Valid PeerReviewFeedbackMultiChoice - {satisfactory_status}")
+            print(f"[PeerReviewMultiChoiceMiddleware]    Next action: {feedback.next_action.value}")
         except Exception as e:
-            print(f"[PeerReviewMultiChoiceMiddleware] ✗ Validation failed: {e}")
+            print(f"[PeerReviewMultiChoiceMiddleware] ❌ Validation failed: {e}")
             raise ValueError(f"Agent output does not match PeerReviewFeedbackMultiChoice schema: {e}")

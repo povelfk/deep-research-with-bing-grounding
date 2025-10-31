@@ -6,6 +6,7 @@ from agent_framework import (
 import asyncio
 import json
 import os
+import time
 from typing import Any, Callable, Union
 from dataclasses import dataclass
 
@@ -122,6 +123,8 @@ async def search_executor(
         raise TypeError(f"Unexpected input type: {type(input_data)}")
 
     async def search_single_query(subtopic: str, query: str) -> dict:
+        print(f"[SearchExecutor] 🚀 Agent BingSearchAgent starting...")
+        query_start_time = time.time()
         prompt = (
             f"Research the following query: {query}\n"
             f"This is related to subtopic: {subtopic}\n"
@@ -154,7 +157,8 @@ async def search_executor(
             # Convert citations to the expected format
             citation_results = [{"title": c["title"], "url": c["url"]} for c in citations]
             
-            print(f"[SearchExecutor] Extracted {len(citation_results)} citations for query: {query[:50]}...")
+            query_duration = time.time() - query_start_time
+            print(f"[SearchExecutor] ✅ Agent BingSearchAgent completed in {query_duration:.2f}s")
             
             return {
                 "query": query,
@@ -163,7 +167,9 @@ async def search_executor(
             }
             
         except Exception as e:
-            print(f"[SearchExecutor] Error for query '{query}': {e}")
+            query_duration = time.time() - query_start_time
+            print(f"[SearchExecutor] ✅ Agent BingSearchAgent completed in {query_duration:.2f}s (with error)")
+            print(f"[SearchExecutor]   Error: {e}")
             return {
                 "query": query,
                 "agent_response": "",
@@ -196,7 +202,6 @@ async def search_executor(
             subtopic_groups[subtopic] = {"subtopic": subtopic, "queries": []}
         
         if isinstance(result, Exception):
-            print(f"Error for query '{query}': {result}")
             subtopic_groups[subtopic]["queries"].append({
                 "query": query, 
                 "results": [], 
