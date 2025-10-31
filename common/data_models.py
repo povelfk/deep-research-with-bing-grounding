@@ -6,7 +6,7 @@ class ResearchTask(BaseModel):
     id: Optional[str] = Field(None, description="Unique identifier for the task")
     subtopic: str = Field(..., description="Subtopic to research")
     search_queries: List[str] = Field(..., description="List of search queries to explore this subtopic")
-    completed: bool = Field(..., description="Status of task completion")
+    completed: bool = Field(default=False, description="Status of task completion")
 
 class ResearchPlan(BaseModel):
     query: str = Field(..., description="The original user query that prompted this research")
