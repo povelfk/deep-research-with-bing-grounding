@@ -7,4 +7,6 @@ experiments/
 utils_search_v2.py
 
 report*.md
+reports/
+
 .vscode/launch.json
