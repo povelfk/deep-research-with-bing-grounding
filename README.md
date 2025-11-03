@@ -110,6 +110,8 @@ Choose one of the three notebooks or the Python workflow:
   - `nodes.py`: Workflow executors for search, summary, report generation, and routing
   - `middleware.py`: Validation and parsing for agent responses
   - `update_agent_instructions.py`: Agent instruction management
+  - `create_peer_review_agent_multi_choice.py`: Peer review agent with multi-choice decision making
+  - `helper.py`: Visualization and workflow display utilities for Agent Framework
 - `requirements.txt`: Project dependencies
 
 ## Agent Architecture
