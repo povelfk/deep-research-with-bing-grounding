@@ -64,14 +64,12 @@ This repository provides three notebooks and one Python workflow for different r
    ```bash
    pip install -r requirements.txt
    ```
-3. Configure environment variables in a `.env` file:
-   ```
-   AOAI_ENDPOINT=your_azure_openai_endpoint
-   AOAI_KEY=your_azure_openai_key
-   PROJECT_CONNECTION_STRING=your_project_connection_string
-   BING_CONNECTION_NAME=your_bing_connection_name
-   bingSearchAgentID=your_bing_search_agent_id
-   ```
+3. Configure environment variables in a `.env` file. Required variables differ by notebook:
+   - **Notebooks 01 & 02** (OpenAI Agents SDK + Azure AI Agents): Create agents inline except for Bing Search
+   - **Notebook 03** (Azure AI Agents only): Requires pre-created agents via `00_create_agents.py`
+   - **Workflow 04** (Agent Framework): Requires pre-created agents via `00_create_agents.py`
+   
+   See the first cell of each notebook for specific environment variable requirements.
 
 ### Running the Project
 
