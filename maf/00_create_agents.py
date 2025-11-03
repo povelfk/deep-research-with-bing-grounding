@@ -1,6 +1,13 @@
 import os
+import sys
+from pathlib import Path
+
+# Add parent directory to path to enable relative imports
+parent_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(parent_dir))
+
 import dotenv
-dotenv.load_dotenv(".env", override=True)
+dotenv.load_dotenv(str(parent_dir / ".env"), override=True)
 
 from common.create_azure_ai_agents import get_project_client, create_agents
 from maf.create_peer_review_agent_multi_choice import create_peer_review_agent_multi_choice

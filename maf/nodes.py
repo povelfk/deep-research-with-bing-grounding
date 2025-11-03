@@ -36,42 +36,6 @@ class RoutingDecision:
     feedback: PeerReviewFeedbackMultiChoice 
 
 
-async def retry_with_backoff(
-    func: Callable,
-    *args: Any,
-    max_retries: int = 2,
-    initial_delay: float = 1.0,
-    backoff_factor: float = 2.0,
-    **kwargs: Any
-) -> Any:
-    """
-    Retry an async function with exponential backoff.
-    
-    Args:
-        func: Async function to retry
-        max_retries: Maximum number of retry attempts
-        initial_delay: Initial delay in seconds
-        backoff_factor: Multiplier for delay after each retry
-        *args, **kwargs: Arguments to pass to func
-    """
-    last_exception = None
-    delay = initial_delay
-    
-    for attempt in range(max_retries + 1):
-        try:
-            return await func(*args, **kwargs)
-        except Exception as e:
-            last_exception = e
-            if attempt < max_retries:
-                print(f"[Retry] Attempt {attempt + 1}/{max_retries + 1} failed: {type(e).__name__}. Retrying in {delay:.1f}s...")
-                await asyncio.sleep(delay)
-                delay *= backoff_factor
-            else:
-                print(f"[Retry] All {max_retries + 1} attempts failed.")
-    
-    raise last_exception
-
-
 @executor(id="search_executor")
 async def search_executor(
     input_data: Union[AgentExecutorResponse, RoutingDecision],
@@ -250,13 +214,7 @@ async def summary_executor(
             f"'{subtopic_result.get('subtopic', 'Unknown')}':\n\n{content}"
         )
         
-        # Wrap the agent call with retry logic
-        summary_response = await retry_with_backoff(
-            summary_agent.run,
-            prompt,
-            max_retries=3,
-            initial_delay=2.0
-        )
+        summary_response = await summary_agent.run(messages=prompt)
         summary_text = (
             summary_response.text if hasattr(summary_response, "text") else str(summary_response)
         )

@@ -71,7 +71,7 @@ research_report_agent = ChatAgent(
     middleware=[validate_and_parse_research_report_middleware]
 )
 peer_review_agent_multi_choice = ChatAgent(
-    name="PeerReviewAgent",
+    name="PeerReviewAgentMultiChoice",
     chat_client=peer_review_agent_multi_choice_client,
     middleware=[validate_and_parse_peer_review_multi_choice_middleware]
 )

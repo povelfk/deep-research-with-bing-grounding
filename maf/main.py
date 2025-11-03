@@ -3,11 +3,17 @@
 #################################################################################################################################################
 
 import asyncio
+import sys
+from pathlib import Path
+
+# Add parent directory to path to enable relative imports
+parent_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(parent_dir))
+
 import dotenv
-dotenv.load_dotenv(".env", override=True)
+dotenv.load_dotenv(str(parent_dir / ".env"), override=True)
 
 from agent_framework import WorkflowBuilder, Case, Default
-
 from common.data_models import NextAction
 from maf.helper import save_report
 from maf.update_agent_instructions import update_agent_instructions
@@ -44,21 +50,18 @@ async def main():
         .build()
     )
 
-    user_query="What are the differences between classical machine learning, deep learning and generative AI?"
-
     try:
+        user_query="What are the differences between classical machine learning, deep learning and generative AI?"
         events = await workflow.run(user_query)
         outputs = events.get_outputs()
-        final_report = outputs[0]            
+        final_report = outputs[0]   
         save_report(final_report)
     except Exception as e:
         print(f"Error during workflow execution: {e}")
         raise
     finally:
-        # Always cleanup agent clients after workflow completes, even if an error occurs
         print("\n[Main] Cleaning up agent clients...")
         await cleanup_all_agents()
 
 if __name__ == "__main__":
-
     asyncio.run(main())

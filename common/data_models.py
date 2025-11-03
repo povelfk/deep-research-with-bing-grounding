@@ -77,4 +77,3 @@ class PeerReviewFeedbackMultiChoice(BaseModel):
         "- For REVISE_REPORT: Explain what aspects need improvement (e.g., 'Add more analysis in the methodology section')\n"
         "- For GATHER_MORE_DATA: Specify what topics need more research (e.g., 'Need more recent statistics on AI adoption rates')\n"
     ))
-    provided_report: Optional[ComprehensiveResearchReport] = Field(default=None, description="The report that was reviewed. Include when routing back for revisions.")

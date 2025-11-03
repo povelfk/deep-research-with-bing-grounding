@@ -5,7 +5,7 @@ import os
 import dotenv
 dotenv.load_dotenv(".env", override=True)
 
-from azure.ai.projects.aio import AIProjectClient
+from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 
 def create_research_plan_agent(project_client):

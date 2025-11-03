@@ -25,7 +25,7 @@ def collect_responses_and_citations(subtopic_result: Dict) -> Tuple[List[str], S
             title = result_item.get("title")
             url = result_item.get("url")
             if title and url:
-                unique_citations.add( (title, url) )
+                unique_citations.add((title, url))
 
     return all_agent_responses, unique_citations
 
