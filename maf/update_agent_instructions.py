@@ -160,12 +160,32 @@ def update_research_instructions(agent):
         "- Retain high-quality content in any revision.\n"
         "- If feedback highlights missing info, propose specific research queries.\n"
         "- Avoid unnecessary repetition.\n\n"
+        
+        "### CRITICAL: IEEE Citation Requirements\n\n"
+        "The research_input you receive contains citations grouped by subtopic in the 'aggregated_summaries' field. You MUST:\n\n"
+        
+        "1. **Create a Master Citation List**: Extract all unique (title, URL) pairs from all subtopics' citations\n"
+        "2. **Number Sequentially**: Assign each unique citation a number: [1][2][3] etc.\n"
+        "3. **Insert Inline Citations**: Place citation numbers [N] immediately after statements using information from sources\n"
+        "4. **Cite Claims**: Every significant claim, statistic, technical detail, or factual statement MUST have an inline citation\n"
+        "5. **References Section**: Include a 'References' or 'Citations' section at the end with IEEE format:\n"
+        "   [1] Source Title, URL\n"
+        "   [2] Another Source Title, URL\n\n"
+        
+        "**Citation Example:**\n"
+        "\"Deep learning achieved a breakthrough in 2012 with AlexNet [1]. The model reduced error rates significantly "
+        "compared to traditional methods [2]. Modern architectures like transformers have further improved performance [3].\"\n\n"
+        
+        "**References Example:**\n"
+        "[1] ImageNet Classification with Deep Convolutional Neural Networks, https://papers.nips.cc/paper/...\n"
+        "[2] Comparison of Traditional and Deep Learning Methods, https://arxiv.org/abs/...\n"
+        "[3] Attention Is All You Need, https://arxiv.org/abs/1706.03762\n\n"
 
-        "**REMINDER**:"
+        "**REMINDER:**\n"
         "Your output should be a single, cohesive Markdown document that reads like a well-developed academic or professional paper, with minimal use of bullet points. "
         "Prefer broader thematic sections over excessive fragmentation. "
         "Sub-subsections may be used where helpful, but structure should remain balanced and readable. "
-        "Lastly, do not forget to include the references section at the end of the report."
+        "Do not forget to include inline citations [1], [2], etc. throughout your text and the references section at the end of the report."
     ).strip()
 
     project_client.agents.update_agent(
