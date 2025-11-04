@@ -54,7 +54,7 @@ async def main():
         user_query="What are the differences between classical machine learning, deep learning and generative AI?"
         events = await workflow.run(user_query)
         outputs = events.get_outputs()
-        final_report = outputs[0]   
+        final_report = outputs[0]
         save_report(final_report)
     except Exception as e:
         print(f"Error during workflow execution: {e}")
