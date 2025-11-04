@@ -8,5 +8,6 @@ utils_search_v2.py
 
 report*.md
 reports/
+workflow_graph_agent_framework.svg
 
 .vscode/launch.json
