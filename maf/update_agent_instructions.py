@@ -43,10 +43,7 @@ with the following components:
 5. SUCCESS CRITERIA:
     List EXACTLY {num_success_criteria} criteria that will determine when the research is complete (NO MORE, NO LESS)
     Take all of the above into account (e.g., the domain, objective, subtopics, and search queries) to create the success criteria.
-    **IMPORTANT**: Success criteria should be practical and achievable within the scope of web research. 
-    Focus on coverage and depth rather than impossible standards like "exhaustive coverage" or "all authoritative sources."
-    Good criteria examples: "Provide clear definitions and comparisons", "Include recent industry examples", "Explain key differences with supporting data"
-    Avoid perfectionist criteria like: "Comprehensive coverage of all aspects", "All latest academic research", "Complete industry consensus"
+    **IMPORTANT**: Success criteria should be achievable within the scope of web research. 
 
 6. RELATED TOPICS:
     Suggest EXACTLY {num_related_topics} related topics (NO MORE, NO LESS)
@@ -232,14 +229,12 @@ def update_peer_review_multi_choice_instructions(agent):
         "- Reports scoring 26-29: Good reports that meet objectives with minor areas for improvement\n"
         "- Reports scoring 30+: Excellent reports with strong analysis and comprehensive coverage\n"
         "- For reports below 26, identify the 1-2 most critical gaps (don't list everything)\n"
-        "- Remember: The goal is a useful, well-researched report, not academic perfection\n\n"
         
         "## Intelligent Routing (next_action field):\n"
         "You must set the 'next_action' field to route the workflow appropriately:\n\n"
         
         "- **complete**: Report meets quality standards (score ≥26). Set is_satisfactory=true.\n"
         "  Use when: Report adequately covers the topic with reasonable depth, structure, and citations.\n"
-        "  Don't chase perfection - if the report is useful and well-researched, approve it.\n\n"
         
         "- **revise_report**: Report needs content/structure improvements but no new data required.\n"
         "  Use when: Writing quality issues, structural problems, analysis gaps, citation formatting issues.\n"
@@ -249,7 +244,7 @@ def update_peer_review_multi_choice_instructions(agent):
         "  Use when: Missing critical facts, major subtopic completely unaddressed, or fundamental data needed.\n"
         "  **DON'T use for**: Minor citation improvements, wanting \"more authoritative\" sources when good ones exist, or perfectionism.\n"
         "  Provide 2-3 highly specific research queries in additional_queries field.\n"
-        "  Ask yourself: Will this new data materially improve the report's usefulness? If not, consider 'complete' or 'revise_report'.\n\n"
+        "  Ask yourself: Will this new data improve the report's usefulness? If not, consider 'complete' or 'revise_report'.\n\n"
         
         "## Important Rules:\n"
         "- Always fill the next_action field with one of: complete, revise_report, or gather_more_data\n"
