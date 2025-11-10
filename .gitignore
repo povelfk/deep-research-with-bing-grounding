@@ -11,3 +11,5 @@ reports/
 workflow_graph_agent_framework.svg
 
 .vscode/launch.json
+
+.venv/
