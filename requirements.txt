@@ -1,11 +1,11 @@
 flask
-openai
+openai==2.5.0
 uuid
 python-dotenv
 azure-core
 qdrant-client
 tiktoken
-openai-agents
+openai-agents==0.4.0
 langchain
 langchain-community
 rich
