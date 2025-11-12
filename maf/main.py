@@ -17,11 +17,13 @@ from agent_framework import WorkflowBuilder, Case, Default
 from common.data_models import NextAction
 from maf.helper import save_report
 from maf.update_agent_instructions import update_agent_instructions
-from maf.agents import planner_agent, peer_review_agent_multi_choice, cleanup_all_agents
+from maf.agents import cleanup_all_agents
 from maf.nodes import (
+    planner_executor,
     search_executor,
     summary_executor,
     research_report_executor,
+    peer_review_executor,
     to_routing_decision,
     get_next_action,
     handle_complete,
@@ -32,12 +34,12 @@ async def main():
     update_agent_instructions()
     workflow = (
         WorkflowBuilder()
-        .set_start_executor(planner_agent)
-        .add_edge(planner_agent, search_executor)
+        .set_start_executor(planner_executor)
+        .add_edge(planner_executor, search_executor)
         .add_edge(search_executor, summary_executor)
         .add_edge(summary_executor, research_report_executor)
-        .add_edge(research_report_executor, peer_review_agent_multi_choice)
-        .add_edge(peer_review_agent_multi_choice, to_routing_decision)
+        .add_edge(research_report_executor, peer_review_executor)
+        .add_edge(peer_review_executor, to_routing_decision)
         .add_switch_case_edge_group(
             to_routing_decision,
             [

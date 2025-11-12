@@ -7,13 +7,10 @@ import asyncio
 import json
 import os
 import time
-from typing import Any, Callable, Union
+from typing import Any, Union
 from dataclasses import dataclass
 
 from common.data_models import (
-    ResearchPlan,
-    ComprehensiveResearchReport,
-    PeerReviewFeedback,
     PeerReviewFeedbackMultiChoice,
     NextAction,
 )
@@ -23,10 +20,32 @@ from common.utils_summary import collect_responses_and_citations
 from common.create_azure_ai_agents import get_async_project_client
 
 from maf.agents import (
+    planner_agent,
     summary_agent,
     research_report_agent,
+    peer_review_agent_multi_choice,
     bing_search_agent_client,  # Import the raw client
 )
+
+@executor(id="planner_executor")
+async def planner_executor(user_query: str, ctx: WorkflowContext[AgentExecutorResponse]) -> None:
+    """Execute the planner agent to generate a research plan."""
+    
+    prompt = (
+        "Create a detailed research plan based on the following user query:\n\n"
+        f"{user_query}\n\n"
+        "The research plan should include specific subtopics, search queries, "
+        "and success criteria to ensure comprehensive coverage of the topic."
+    )
+    
+    agent_response = await planner_agent.run(messages=prompt)
+    
+    response = AgentExecutorResponse(
+        agent_run_response=agent_response,
+        executor_id="planner_executor"
+    )
+    await ctx.send_message(response)
+
 
 # Forward declaration for type hints
 @dataclass
@@ -37,10 +56,7 @@ class RoutingDecision:
 
 
 @executor(id="search_executor")
-async def search_executor(
-    input_data: Union[AgentExecutorResponse, RoutingDecision],
-    ctx: WorkflowContext[list],
-) -> WorkflowContext[list]:
+async def search_executor(input_data: Union[AgentExecutorResponse, RoutingDecision], ctx: WorkflowContext[list]) -> None:
     """
     Run Bing searches based on input from either:
     1. planner_agent (AgentExecutorResponse with ResearchPlan)
@@ -51,8 +67,7 @@ async def search_executor(
     if isinstance(input_data, AgentExecutorResponse):
         # Initial run: Parse research plan from planner
         print("[SearchExecutor] Initial search execution from planner")
-        plan_text = input_data.agent_run_response.text
-        research_plan = ResearchPlan.model_validate_json(plan_text)
+        research_plan = input_data.agent_run_response.value
         
         await ctx.shared_state.set("research_plan", research_plan)
         total_queries = sum(len(task.search_queries) for task in research_plan.research_tasks)
@@ -87,7 +102,7 @@ async def search_executor(
         raise TypeError(f"Unexpected input type: {type(input_data)}")
 
     async def search_single_query(subtopic: str, query: str) -> dict:
-        print(f"[SearchExecutor] 🚀 Agent BingSearchAgent starting...")
+        print(f"[SearchExecutor] 🚀 search query started...")
         query_start_time = time.time()
         prompt = (
             f"Research the following query: {query}\n"
@@ -120,7 +135,6 @@ async def search_executor(
             
             # Convert citations to the expected format
             citation_results = [{"title": c["title"], "url": c["url"]} for c in citations]
-            
             query_duration = time.time() - query_start_time
             print(f"[SearchExecutor] ✅ Agent BingSearchAgent completed in {query_duration:.2f}s")
             
@@ -182,18 +196,11 @@ async def search_executor(
     # await ctx.yield_output(search_results)
 
     await ctx.send_message(search_results)
-    return ctx
 
 
 @executor(id="summary_executor")
-async def summary_executor(
-    search_results: list,
-    ctx: WorkflowContext[list],
-) -> WorkflowContext[list]:
+async def summary_executor(search_results: list, ctx: WorkflowContext[list]) -> None:
     """Summarize each subtopic concurrently."""
-
-    print(f"[SummaryExecutor] Summarizing {len(search_results)} subtopics...")
-
     async def summarize_subtopic(subtopic_result: dict) -> dict:
         # Use the same utility function as the notebook for consistency
         all_responses, unique_citations = collect_responses_and_citations(subtopic_result)
@@ -225,20 +232,18 @@ async def summary_executor(
             "citations": citations_list,
         }
 
+    print(f"[SummaryExecutor] Summarizing {len(search_results)} subtopics...")
+
     mapped_chunks = await asyncio.gather(
         *(summarize_subtopic(result) for result in search_results)
     )
 
     print(f"[SummaryExecutor] Completed {len(mapped_chunks)} summaries")
     await ctx.send_message(mapped_chunks)
-    return ctx
 
 
 @executor(id="research_report_executor")
-async def research_report_executor(
-    input_data: Union[list, RoutingDecision],
-    ctx: WorkflowContext[AgentExecutorResponse],
-) -> WorkflowContext[AgentExecutorResponse]:
+async def research_report_executor(input_data: Union[list, RoutingDecision], ctx: WorkflowContext[AgentExecutorResponse]) -> None:
     """
     Execute research report agent for initial generation or revision.
     Handles input from:
@@ -272,9 +277,18 @@ async def research_report_executor(
         
         decision = input_data
         feedback = decision.feedback
+
+        # Retrieve the current report from shared state
+        current_report = await ctx.shared_state.get("latest_research_report")
+        if not current_report:
+            raise ValueError("Cannot revise report: no previous report found in shared state")
         
         # Construct detailed revision prompt
-        revision_prompt_parts = ["Peer review feedback:\n"]
+        revision_prompt_parts = [
+            "Here is the current research report:\n\n",
+            f"```\n{current_report}\n```\n\n",
+            "Peer review feedback:\n"
+        ]
         
         if feedback.overall_feedback:
             revision_prompt_parts.append(f"Overall: {feedback.overall_feedback}\n")
@@ -299,8 +313,7 @@ async def research_report_executor(
     
     # Parse and store the report in shared state
     try:
-        report_text = agent_response.text if hasattr(agent_response, 'text') else str(agent_response)
-        report = ComprehensiveResearchReport.model_validate_json(report_text)
+        report = agent_response.value
         
         # Store in shared state for later retrieval
         await ctx.shared_state.set("latest_research_report", report.research_report)
@@ -315,45 +328,53 @@ async def research_report_executor(
         executor_id="research_report_executor"
     )
     await ctx.send_message(response)
-    return ctx
 
 
-def get_verdict(expected_result: bool):
-    def condition(message: Any) -> bool:
-        response_test = None
-
-        # Case 1: AgentExecutorResponse (from @executor-wrapped agents)
-        if isinstance(message, AgentExecutorResponse):
-            response_text = message.agent_run_response.text
-        # Case 2: Direct response object with .text attribute (from ChatAgent)
-        elif hasattr(message, 'text'):
-            response_text = message.text
-        # Case 3: Result object (from streaming)
-        elif hasattr(message, 'result') and hasattr(message.result, 'text'):
-            response_text = message.result.text
-        # Case 4: Response attribute
-        elif hasattr(message, 'response') and hasattr(message.response, 'text'):
-            response_text = message.response.text
-        else:
-            # If we can't extract text, allow the edge to pass to avoid workflow deadlock
-            print(f"[get_verdict] Warning: Could not extract text from message type {type(message)}")
-            return True
-        try:
-            feedback = PeerReviewFeedback.model_validate_json(response_text)
-            result = feedback.is_satisfactory == expected_result
-            print(f"[get_verdict] is_satisfactory={feedback.is_satisfactory}, expected={expected_result}, match={result}")
-            return result
-        except Exception:
-            return False
-        
-    return condition
+@executor(id="peer_review_executor")
+async def peer_review_executor(input_data: AgentExecutorResponse, ctx: WorkflowContext[AgentExecutorResponse]) -> None:
+    """Execute peer review agent to evaluate the research report."""
+    
+    print("[PeerReviewExecutor] Evaluating research report quality...")
+    
+    # Get the research plan from shared state for context
+    research_plan = await ctx.shared_state.get("research_plan")
+    if not research_plan:
+        raise ValueError("Cannot review report: no research plan found in shared state")
+    
+    # Get the latest report from shared state for review
+    current_report = await ctx.shared_state.get("latest_research_report")
+    if not current_report:
+        raise ValueError("Cannot review report: no report found in shared state")
+    
+    # Construct prompt with essential research plan context
+    prompt = (
+        "Please review the following research report against the original research objectives.\n\n"
+        "**Research Objective:**\n"
+        f"{research_plan.objective}\n\n"
+        "**Success Criteria:**\n"
+    )
+    
+    for criterion in research_plan.success_criteria:
+        prompt += f"  • {criterion}\n"
+    
+    prompt += (
+        f"\n**Research Report to Review:**\n"
+        f"```\n{current_report}\n```\n\n"
+        "Evaluate the report on completeness, clarity, evidence quality, and analysis depth. "
+        "Provide your feedback in the required structured format."
+    )
+    
+    agent_response = await peer_review_agent_multi_choice.run(messages=prompt)
+    
+    response = AgentExecutorResponse(
+        agent_run_response=agent_response,
+        executor_id="peer_review_executor"
+    )
+    await ctx.send_message(response)
 
 
 @executor(id="output_final_report")
-async def output_final_report(
-    review_response: AgentExecutorResponse,
-    ctx: WorkflowContext,
-) -> None:
+async def output_final_report(review_response: AgentExecutorResponse, ctx: WorkflowContext) -> None:
     """Extract and output the final research report from shared state."""
     
     try:
@@ -373,14 +394,11 @@ async def output_final_report(
 
 
 # ============================================================================================================
-# NEW: Multi-choice routing system using switch-case pattern
+# Multi-choice routing system using switch-case pattern
 # ============================================================================================================
 
 @executor(id="to_routing_decision")
-async def to_routing_decision(
-    response: AgentExecutorResponse,
-    ctx: WorkflowContext[RoutingDecision],
-) -> None:
+async def to_routing_decision(response: AgentExecutorResponse, ctx: WorkflowContext[RoutingDecision]) -> None:
     """Transform peer review response into a typed routing decision for switch-case evaluation."""
     
     # Get current iteration count (handle KeyError if not set)
@@ -392,8 +410,7 @@ async def to_routing_decision(
     max_iterations = 2  # Maximum number of revision/data gathering cycles
     
     try:
-        response_text = response.agent_run_response.text
-        feedback = PeerReviewFeedbackMultiChoice.model_validate_json(response_text)
+        feedback = response.agent_run_response.value
         
         # Check if we've exceeded max iterations
         if iteration_count >= max_iterations and feedback.next_action != NextAction.COMPLETE:
@@ -457,10 +474,7 @@ def get_next_action(expected_action: NextAction):
 
 
 @executor(id="handle_complete")
-async def handle_complete(
-    decision: RoutingDecision,
-    ctx: WorkflowContext,
-) -> None:
+async def handle_complete(decision: RoutingDecision, ctx: WorkflowContext) -> None:
     """Handle the COMPLETE routing case - extract and output final report."""
     
     if decision.next_action != NextAction.COMPLETE:
@@ -483,10 +497,7 @@ async def handle_complete(
 
 
 @executor(id="handle_routing_error")
-async def handle_routing_error(
-    decision: RoutingDecision,
-    ctx: WorkflowContext,
-) -> None:
+async def handle_routing_error(decision: RoutingDecision, ctx: WorkflowContext) -> None:
     """Default handler for unexpected routing cases."""
     
     print(f"[HandleRoutingError] Unexpected routing decision: {decision.next_action.value}")
