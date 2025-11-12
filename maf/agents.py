@@ -4,12 +4,15 @@ from azure.identity import DefaultAzureCredential
 import os
 
 from maf.middleware import (
-    validate_and_parse_research_plan_middleware,
-    validate_and_parse_research_report_middleware,
-    validate_and_parse_peer_review_middleware,
-    validate_and_parse_peer_review_multi_choice_middleware,
-    simple_logging_agent_middleware,
+    simple_logging_agent_middleware
 )
+
+from common.data_models import (
+    ResearchPlan,
+    ComprehensiveResearchReport,
+    PeerReviewFeedbackMultiChoice
+)
+
 
 credential = DefaultAzureCredential()
 
@@ -53,7 +56,8 @@ peer_review_agent_multi_choice_client = AzureAIAgentClient(
 planner_agent = ChatAgent(
     name="PlannerAgent",
     chat_client=planner_agent_client,
-    middleware=[validate_and_parse_research_plan_middleware]
+    middleware=[simple_logging_agent_middleware],
+    response_format=ResearchPlan
 )
 bing_search_agent = ChatAgent(
     name="BingSearchAgent",
@@ -68,12 +72,15 @@ summary_agent = ChatAgent(
 research_report_agent = ChatAgent(
     name="ResearchReportAgent",
     chat_client=research_report_agent_client,
-    middleware=[validate_and_parse_research_report_middleware]
+    middleware=[simple_logging_agent_middleware],
+    response_format=ComprehensiveResearchReport
+
 )
 peer_review_agent_multi_choice = ChatAgent(
     name="PeerReviewAgentMultiChoice",
     chat_client=peer_review_agent_multi_choice_client,
-    middleware=[validate_and_parse_peer_review_multi_choice_middleware]
+    middleware=[simple_logging_agent_middleware],
+    response_format=PeerReviewFeedbackMultiChoice
 )
 
 # =================================================== CLEANUP ===================================================
