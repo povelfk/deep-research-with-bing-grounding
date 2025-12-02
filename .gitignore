@@ -4,7 +4,8 @@ __pycache__/
 todo.txt
 
 experiments/
-utils_search_v2.py
+
+requirements_old.txt
 
 report*.md
 reports/
