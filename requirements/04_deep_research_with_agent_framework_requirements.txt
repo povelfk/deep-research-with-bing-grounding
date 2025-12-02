@@ -1,0 +1,19 @@
+# Core dependencies
+ipykernel
+azure-identity
+python-dotenv
+uuid
+python-dotenv
+azure-core
+rich
+
+graphviz
+
+agent-framework==1.0.0b251120
+# agent-framework-azure-ai==1.0.0b251120
+
+openai-agents==0.3.3
+azure-ai-projects==1.0.0b11
+openai<2,>=1.99.0
+azure-ai-agents==1.2.0b5
+

@@ -1,0 +1,10 @@
+ipykernel
+openai<2,>=1.99.0
+python-dotenv
+azure-core
+openai-agents==0.3.3
+rich
+graphviz
+
+azure-identity==1.20.0
+azure-ai-projects==1.0.0b11
