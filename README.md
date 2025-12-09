@@ -2,6 +2,8 @@
 
 This project demonstrates an agentic research workflow that leverages Azure AI services to conduct comprehensive web-based research on any topic.
 
+> **Note:** This project uses **Azure AI Agents v1** (not v2). The API and SDK patterns may differ from newer versions.
+
 ## Project Overview
 
 The system uses specialized AI agents orchestrated together to transform a user query into a comprehensive research report through these steps:
@@ -53,7 +55,9 @@ This repository provides three notebooks and one Python workflow for different r
 
 ### Prerequisites
 
-- Azure subscription with access to Azure OpenAI + Bing Resource
+- Azure subscription with access to:
+  - **Azure OpenAI** with a deployed model (e.g., `gpt-4o`) - The scripts create agents but do **not** deploy models
+  - **Azure AI Foundry** project with a Bing Grounding tool connection already configured - The scripts do **not** create the Bing tool
 - Azure AI Projects connection
 - Python 3.8+
 
