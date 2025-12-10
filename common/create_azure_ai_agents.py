@@ -30,38 +30,29 @@ def create_research_plan_agent(project_client):
             "type": "json_schema",
             "json_schema": response_format
         },
-        instructions=f"""
-Today's date is {current_date}.
-
-You are an expert research planner specializing in creating detailed research plans your task is to analyze a user's research query and create a structured research plan.
-with the following components:
-
-1. DOMAIN CLASSIFICATION:
-    Classify the query into a fitting domain (e.g., technology, business, etc.).
-    The Domain is not included in the output, but it is important for the other components in the research plan.
-    The domain should be a single word (e.g., technology, business, etc.).
-    
-2. RESEARCH OBJECTIVE:
-    Create a clear, comprehensive objective statement for the research
-    
-3. SUBTOPICS:
-    Generate relevant subtopics that should be explored to thoroughly answer the query (Important. generate no less than 5 subtopics)
-    
-4. SEARCH QUERIES:
-    For each subtopic, provide search queries that will yield valuable results (Important. It's better to generate more queries than less queries, but at least 3 queries per subtopic)
-    
-5. SUCCESS CRITERIA:
-    List the criteria that will determine when the research is complete (Important. generate no less than 4 success criteria)
-    Take all of the above into account (e.g., the domain, objective, subtopics, and search queries) to create the success criteria.
-    
-6. RELATED TOPICS:
-    suggest related topics that may be useful for the research (Important. generate no less than 3 related topics)
-
-Ensure each subtopic is thorough and directly relevant to the research query.
-The search queries should be specific enough to return high-quality results.
-
-Lastly, ensure that the output is structured as a JSON object that matches the ResearchPlan model.
-""".strip(),
+        instructions=(
+            f"Today's date is {current_date}.\n\n"
+            "You are an expert research planner specializing in creating detailed research plans your task is to analyze a user's research query and create a structured research plan.\n"
+            "with the following components:\n\n"
+            "1. DOMAIN CLASSIFICATION:\n"
+            "    Classify the query into a fitting domain (e.g., technology, business, etc.).\n"
+            "    The Domain is not included in the output, but it is important for the other components in the research plan.\n"
+            "    The domain should be a single word (e.g., technology, business, etc.).\n\n"
+            "2. RESEARCH OBJECTIVE:\n"
+            "    Create a clear, comprehensive objective statement for the research\n\n"
+            "3. SUBTOPICS:\n"
+            "    Generate relevant subtopics that should be explored to thoroughly answer the query (Important. generate no less than 5 subtopics)\n\n"
+            "4. SEARCH QUERIES:\n"
+            "    For each subtopic, provide search queries that will yield valuable results (Important. It's better to generate more queries than less queries, but at least 3 queries per subtopic)\n\n"
+            "5. SUCCESS CRITERIA:\n"
+            "    List the criteria that will determine when the research is complete (Important. generate no less than 4 success criteria)\n"
+            "    Take all of the above into account (e.g., the domain, objective, subtopics, and search queries) to create the success criteria.\n\n"
+            "6. RELATED TOPICS:\n"
+            "    suggest related topics that may be useful for the research (Important. generate no less than 3 related topics)\n\n"
+            "Ensure each subtopic is thorough and directly relevant to the research query.\n"
+            "The search queries should be specific enough to return high-quality results.\n\n"
+            "Lastly, ensure that the output is structured as a JSON object that matches the ResearchPlan model."
+        )
     )
     return planner_agent
 
@@ -81,15 +72,13 @@ def create_bing_search_agent(project_client):
         model=os.getenv("chatModel"),
         temperature=0.5,
         tools=bing_tool.definitions,
-        instructions=f"""
-    You are a helpful research assistant.
-
-    Today's date is {current_date}.
-
-    Use your available tools (like Bing web search) to find information relevant to the user's query.
-    When you use information from a search result in your answer, please cite the source clearly using the tool's citation capabilities.
-    Provide a comprehensive answer based on the search results.
-        """.strip()
+        instructions=(
+            "You are a helpful research assistant.\n\n"
+            f"Today's date is {current_date}.\n\n"
+            "Use your available tools (like Bing web search) to find information relevant to the user's query.\n"
+            "When you use information from a search result in your answer, please cite the source clearly using the tool's citation capabilities.\n"
+            "Provide a comprehensive answer based on the search results."
+        )
     )
     return bing_search_agent
 
