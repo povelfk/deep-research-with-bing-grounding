@@ -1,14 +1,20 @@
 from typing import List, Optional
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class ResearchTask(BaseModel):
-    id: Optional[str] = Field(None, description="Unique identifier for the task")
+    """A single research task with subtopic and queries."""
+    model_config = ConfigDict(extra="forbid")  # Generates additionalProperties: false
+    
+    id: str = Field(..., description="Unique identifier for the task")
     subtopic: str = Field(..., description="Subtopic to research")
     search_queries: List[str] = Field(..., description="List of search queries to explore this subtopic")
-    completed: bool = Field(default=False, description="Status of task completion")
+    completed: bool = Field(..., description="Status of task completion")
 
 class ResearchPlan(BaseModel):
+    """Complete research plan with objective, tasks, and success criteria."""
+    model_config = ConfigDict(extra="forbid")  # Generates additionalProperties: false
+    
     query: str = Field(..., description="The original user query that prompted this research")
     objective: str = Field(..., description="The overall research objective, clearly defined")
     success_criteria: List[str] = Field(..., description="Criteria to determine when the research is sufficiently complete.")
@@ -16,10 +22,16 @@ class ResearchPlan(BaseModel):
     research_tasks: List[ResearchTask] = Field(..., description="List of specific research tasks to complete. Each task focuses on a subtopic.")
 
 class Citation(BaseModel):
+    """A citation with title and URL."""
+    model_config = ConfigDict(extra="forbid")  # Generates additionalProperties: false
+    
     title: str
     url: str
 
 class ComprehensiveResearchReport(BaseModel):
+    """Complete research report with citations and identified gaps."""
+    model_config = ConfigDict(extra="forbid")  # Generates additionalProperties: false
+    
     objective: str = Field(..., description="The original research objective")
     success_criteria: List[str] = Field(..., description="Criteria to determine when the research is sufficiently complete.")
     research_report: str = Field(..., description=(
@@ -42,10 +54,13 @@ class ComprehensiveResearchReport(BaseModel):
         "List of citations (title and URL), corresponding to references actually used in research_report. "
         "Do not add references that are not cited within the text."
     ))
-    identified_gaps: Optional[List[str]] = Field(default=None, description="Identified information gaps.")
-    additional_queries: Optional[List[str]] = Field(default=None, description="Suggestions for additional research.")
+    identified_gaps: List[str] = Field(..., description="Identified information gaps. Use empty list if none.")
+    additional_queries: List[str] = Field(..., description="Suggestions for additional research. Use empty list if none.")
 
 class PeerReviewFeedback(BaseModel):
+    """Feedback model for peer review (legacy version)."""
+    model_config = ConfigDict(extra="forbid")  # Generates additionalProperties: false
+    
     overall_feedback: Optional[str] = Field(default=None, description="General feedback on the report.")
     strengths: Optional[List[str]] = Field(default=None, description="Aspects of the report that are well done.")
     suggested_improvements: Optional[List[str]] = Field(default=None, description="Specific suggestions to improve clarity, completeness, accuracy, or structure.")
@@ -61,19 +76,17 @@ class NextAction(str, Enum):
 
 class PeerReviewFeedbackMultiChoice(BaseModel):
     """Enhanced peer review feedback model with intelligent routing to specific agents."""
-    overall_feedback: Optional[str] = Field(default=None, description="General feedback on the report.")
-    strengths: Optional[List[str]] = Field(default=None, description="Aspects of the report that are well done.")
-    suggested_improvements: Optional[List[str]] = Field(default=None, description="Specific suggestions to improve clarity, completeness, accuracy, or structure.")
-    additional_queries: Optional[List[str]] = Field(default=None, description="Additional research queries that could strengthen the report.")
+    model_config = ConfigDict(extra="forbid")  # Generates additionalProperties: false
+    
+    overall_feedback: str = Field(..., description="General feedback on the report.")
+    strengths: List[str] = Field(..., description="Aspects of the report that are well done.")
+    suggested_improvements: List[str] = Field(..., description="Specific suggestions to improve clarity, completeness, accuracy, or structure. Use empty list if none.")
+    additional_queries: List[str] = Field(..., description="Additional research queries that could strengthen the report. Use empty list if none.")
     is_satisfactory: bool = Field(..., description="Indicates if the report meets all quality standards and no further revisions are needed.")
-    next_action: NextAction = Field(..., description=(
-        "Determines which agent should handle the next step:\n"
-        "- COMPLETE: Report is satisfactory, workflow ends\n"
-        "- REVISE_REPORT: Route to research_report_agent for content/structure improvements\n"
-        "- GATHER_MORE_DATA: Route to search_executor for additional research on specific topics\n"
-    ))
-    next_action_details: Optional[str] = Field(default=None, description=(
+    next_action: NextAction = Field(...)  # OpenAI schema: $ref cannot have description
+    next_action_details: str = Field(..., description=(
         "Specific details about what needs to be addressed:\n"
         "- For REVISE_REPORT: Explain what aspects need improvement (e.g., 'Add more analysis in the methodology section')\n"
         "- For GATHER_MORE_DATA: Specify what topics need more research (e.g., 'Need more recent statistics on AI adoption rates')\n"
+        "- For COMPLETE: Can be empty string or summary of why report is satisfactory\n"
     ))
