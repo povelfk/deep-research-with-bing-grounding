@@ -160,7 +160,6 @@ async def search_executor(input_data: Union[AgentExecutorResponse, RoutingDecisi
                     seen_urls.add(c["url"])
                     unique_citations.append(c)
 
-            print(f"CITATIONS: {unique_citations}")
             query_duration = time.time() - query_start_time
             print(f"[SearchExecutor] ✅ Agent BingSearchAgent completed in {query_duration:.2f}s with {len(unique_citations)} citations")
             
