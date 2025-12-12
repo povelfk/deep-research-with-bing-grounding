@@ -32,7 +32,7 @@ def create_agents():
         name="ResearchPlanAgent-v2",
         description=("used for deep research demo"),
         definition=PromptAgentDefinition(
-            model="gpt-5.1",
+            model=os.getenv("gpt-51"),
             instructions=(
                 f"Today's date is {current_date}.\n\n"
                 "You are an expert research planner specializing in creating detailed research plans your task is to analyze a user's research query and create a structured research plan.\n"
@@ -65,7 +65,7 @@ def create_agents():
         name="BingSearchAgent-v2",
         description=("used for deep research demo"),
         definition=PromptAgentDefinition(
-            model="gpt-5.1",
+            model=os.getenv("gpt-51"),
             instructions=(
                 "You are a helpful research assistant.\n"
                 f"Today's date is {current_date}.\n"
@@ -91,7 +91,7 @@ def create_agents():
         name="SummaryAgent-v2",
         description=("used for deep research demo"),
         definition=PromptAgentDefinition(
-            model="gpt-5.1",
+            model=os.getenv("gpt-51"),
             instructions=(
                 "You are a comprehensive research summarization specialist. Your task is to **synthesize information from combined search result content** related to a specific subtopic (which will be mentioned in the input prompt). "
                 "Create a **single, coherent, detailed, and information-rich summary** that:\n\n"
@@ -133,7 +133,7 @@ def create_agents():
         name="ResearchReportAgent-v2",
         description=("used for deep research demo"),
         definition=PromptAgentDefinition(
-            model="gpt-5.1",
+            model=os.getenv("gpt-51"),
             instructions=(
                 "## General Instructions\n"
                 "You are a meticulous research analyst specializing in creating **long, comprehensive, authoritative** reports. "
@@ -193,7 +193,7 @@ def create_agents():
         name="PeerReviewAgentMultiChoice-v2",
         description=("used for deep research demo"),
         definition=PromptAgentDefinition(
-            model="gpt-5.1",
+            model=os.getenv("gpt-51"),
             instructions=(
                 "You are a critical yet constructive peer reviewer evaluating research reports. "
                 "Your goal is to provide detailed, actionable feedback using a structured evaluation framework "
@@ -276,7 +276,7 @@ def update_agents():
     project_client.agents.update(
         agent_name="ResearchPlanAgent-v2",
         definition=PromptAgentDefinition(
-            model="gpt-5.1",
+            model=os.getenv("gpt-51"),
             instructions=(
                 f"Today's date is {current_date}.\n\n"
                 "You are an expert research planner specializing in creating detailed research plans your task is to analyze a user's research query and create a structured research plan.\n"
@@ -309,7 +309,7 @@ def update_agents():
     project_client.agents.update(
         agent_name="BingSearchAgent-v2",
         definition=PromptAgentDefinition(
-            model="gpt-5.1",
+            model=os.getenv("gpt-51"),
             instructions=(
                 "You are a helpful research assistant.\n"
                 f"Today's date is {current_date}.\n"
@@ -335,7 +335,7 @@ def update_agents():
     project_client.agents.update(
         agent_name="SummaryAgent-v2",
         definition=PromptAgentDefinition(
-            model="gpt-5.1",
+            model=os.getenv("gpt-51"),
             instructions=(
                 "You are a comprehensive research summarization specialist. Your task is to **synthesize information from combined search result content** related to a specific subtopic (which will be mentioned in the input prompt). "
                 "Create a **single, coherent, detailed, and information-rich summary** that:\n\n"
@@ -375,7 +375,7 @@ def update_agents():
     project_client.agents.update(
         agent_name="ResearchReportAgent-v2",
         definition=PromptAgentDefinition(
-            model="gpt-5.1",
+            model=os.getenv("gpt-51"),
             instructions=(
                 "## General Instructions\n"
                 "You are a meticulous research analyst specializing in creating **long, comprehensive, authoritative** reports. "
@@ -436,7 +436,7 @@ def update_agents():
     project_client.agents.update(
         agent_name="PeerReviewAgentMultiChoice-v2",
         definition=PromptAgentDefinition(
-            model="gpt-5.1",
+            model=os.getenv("gpt-51"),
             instructions=(
                 "You are a critical yet constructive peer reviewer evaluating research reports. "
                 "Your goal is to provide detailed, actionable feedback using a structured evaluation framework "
