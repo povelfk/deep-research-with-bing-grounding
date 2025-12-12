@@ -84,12 +84,8 @@ This repository provides four notebooks and one Python workflow for different re
    # For notebook 05
    pip install -r requirements/05_deep_research_with_agent_framework_requirements.txt
    ```
-3. Configure environment variables in a `.env` file. Required variables differ by notebook:
-   - **Notebooks 01 & 02** (OpenAI Agents SDK + Azure AI Agents): Create agents inline except for Bing Search
-   - **Notebook 03** (Azure AI Agents only): Requires pre-created agents via `00_create_agents.py`
-   - **Workflow 04** (Agent Framework): Requires pre-created agents via `00_create_agents.py`
-   
-   See the first cell of each notebook for specific environment variable requirements.
+3. Configure environment variables in a `.env` file (see `.env.example` for reference). Required variables differ by notebook.   
+    - See `.env.example` for the complete list of environment variables organized by notebook.
 
 ### Running the Project
 
@@ -112,6 +108,7 @@ Choose one of the notebooks or the Python workflow:
 - `03_deep_research_with_azure_ai_agents_only.ipynb`: Pure Azure AI Agents implementation with custom agent orchestration and automated peer review loops
 - `04_deep_research_with_agent_framework.ipynb`: Workflow with Microsoft Agent Framework, switch-case routing, and iteration limits (v1 SDK)
 - `05_deep_research_with_agent_framework_v2.ipynb`: **Latest** workflow with Agent Framework and Azure AI Agents v2 SDK, featuring parallel search and full citation extraction
+- `.env.example`: Template for environment variables, organized by notebook requirements
 - `common/`: Shared utility modules
   - `create_azure_ai_agents.py`: Functions for creating and configuring Azure AI Agents (v1 SDK)
   - `create_azure_ai_agents_v2.py`: Functions for creating and configuring Azure AI Agents (v2 SDK)
