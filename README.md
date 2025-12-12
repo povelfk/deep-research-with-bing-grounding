@@ -32,28 +32,6 @@ This repository provides four notebooks and one Python workflow for different re
 
 - **05_deep_research_with_agent_framework_v2.ipynb**: same workflow as notebook 04, but using the new **Azure AI Agents v2 SDK**.
 
-## Features
-
-- **Comprehensive Research Planning**: Break down complex topics into structured subtopics
-- **Web Information Retrieval**: Leverage Bing Search for up-to-date information
-- **Web Content Scraping**: Extract, clean, and filter main content from web pages for deeper analysis (scraping notebook only)
-- **Intelligent Content Analysis**: Extract key insights while preserving technical details
-- **Collaborative Agent Workflow**: Multiple specialized agents work together
-- **Quality-Focused Peer Review**: Ensure research meets predefined quality standards
-- **Iterative Improvement**: Continuous feedback loop until quality thresholds are met
-- **Proper Citation Management**: IEEE-style citations for academic rigor
-
-## Technology Stack
-
-- **Azure OpenAI**: Core reasoning capability for all agents
-- **Microsoft Agent Framework**: Workflow orchestration with switch-case routing (notebooks 04 & 05)
-- **Azure AI Agents v1 SDK**: Agent orchestration platform (notebooks 01-04)
-- **Azure AI Agents v2 SDK**: Latest agent orchestration with improved response handling (notebook 05)
-- **OpenAI Agents SDK + Azure AI Agents**: Hybrid orchestration approach (notebooks 01 & 02, with Azure AI Agents used specifically for Bing Search integration)
-- **Azure AI Projects Service**: Infrastructure for Bing Search integration
-- **Jupyter Notebooks**: Interactive development environment
-- **Python-based Web Scraping (Trafilatura, requests, custom logic)**: Used by the WebScraperAgent to extract, clean, and filter main content from web pages
-
 ## Getting Started
 
 ### Prerequisites
@@ -101,49 +79,37 @@ Choose one of the notebooks or the Python workflow:
 2. Follow the cells in sequence to execute the full research workflow.
 3. Modify the `user_query` variable to research different topics.
 
+## Technology Stack
+
+- **Azure OpenAI**: Core reasoning capability for all agents
+- **Microsoft Agent Framework**: Workflow orchestration with switch-case routing (notebooks 04 & 05)
+- **Azure AI Agents v1 SDK**: Agent orchestration platform (notebooks 01-04)
+- **Azure AI Agents v2 SDK**: Latest agent orchestration with improved response handling (notebook 05)
+- **OpenAI Agents SDK + Azure AI Agents**: Hybrid orchestration approach (notebooks 01 & 02, with Azure AI Agents used specifically for Bing Search integration)
+- **Azure AI Projects Service**: Infrastructure for Bing Search integration
+- **Jupyter Notebooks**: Interactive development environment
+- **Python-based Web Scraping (Trafilatura, requests, custom logic)**: Used by the WebScraperAgent to extract, clean, and filter main content from web pages
+
+
 ## Project Structure
 
-- `01_deep_research_with_bing_search.ipynb`: Main notebook with the standard workflow (hybrid OpenAI Agents SDK + Azure AI Agents approach)
-- `02_deep_research_with_bing_search_scraping.ipynb`: Enhanced workflow with web scraping for deeper content extraction (hybrid approach)
-- `03_deep_research_with_azure_ai_agents_only.ipynb`: Pure Azure AI Agents implementation with custom agent orchestration and automated peer review loops
-- `04_deep_research_with_agent_framework.ipynb`: Workflow with Microsoft Agent Framework, switch-case routing, and iteration limits (v1 SDK)
-- `05_deep_research_with_agent_framework_v2.ipynb`: **Latest** workflow with Agent Framework and Azure AI Agents v2 SDK, featuring parallel search and full citation extraction
-- `.env.example`: Template for environment variables, organized by notebook requirements
-- `common/`: Shared utility modules
-  - `create_azure_ai_agents.py`: Functions for creating and configuring Azure AI Agents (v1 SDK)
-  - `create_azure_ai_agents_v2.py`: Functions for creating and configuring Azure AI Agents (v2 SDK)
-  - `data_models.py`: Data models and structures used across the project
-  - `helper.py`: Helper functions for visualization and workflow display
-  - `update_instructions.py`: Utilities for updating agent instructions and configurations
-  - `utils_ai_agents.py`: Azure AI Agents utilities for agent orchestration
-  - `utils_research.py`: Research data processing functions
-  - `utils_scraping.py`: Web scraping utilities
-  - `utils_search.py`: Search result parsing utilities
-  - `utils_summary.py`: Summarization utilities
-- `maf/`: Agent Framework modules
-  - `agents.py`: Agent definitions with Azure AI clients (v1 SDK)
-  - `agents_v2.py`: Agent definitions with Azure AI clients (v2 SDK)
-  - `nodes.py`: Workflow executors for search, summary, report generation, and routing (v1 SDK)
-  - `nodes_v2.py`: Workflow executors with parallel search and citation extraction (v2 SDK)
-  - `middleware.py`: Validation and parsing for agent responses
-  - `update_agent_instructions.py`: Agent instruction management
-  - `create_peer_review_agent_multi_choice.py`: Peer review agent with multi-choice decision making
-  - `helper.py`: Visualization and workflow display utilities for Agent Framework
-- `requirements/`: Notebook-specific dependencies
-  - `01_deep_research_with_bing_search_requirements.txt`: Dependencies for notebook 01
-  - `02_deep_research_with_bing_search_scraping_requirements.txt`: Dependencies for notebook 02
-  - `03_deep_research_with_azure_ai_agents_only_requirements.txt`: Dependencies for notebook 03
-  - `04_deep_research_with_agent_framework_requirements.txt`: Dependencies for notebook 04
-  - `05_deep_research_with_agent_framework_requirements.txt`: Dependencies for notebook 05
-
-## Agent Architecture
-
-The workflow combines these specialized agents:
-
-- **PlannerAgent**: Creates comprehensive research plans with subtopics and queries
-- **BingSearchAgent**: Retrieves relevant search results from the web
-- **WebScraperAgent**: Extracts, cleans, and filters relevant content from web pages (scraping notebook only)
-- **SummaryAgent**: Extracts key insights from retrieved or scraped content
-- **ResearchAgent**: Compiles findings into structured research reports
-- **PeerReviewAgent**: Provides quality feedback in a continuous improvement loop
-- **PeerReviewAgentMultiChoice** (notebook 04 & 05): Enhanced peer review with intelligent routing decisions that automatically directs workflow to completion, report revision, or additional data gathering based on structured feedback analysis
+```
+├── 01_deep_research_with_bing_search.ipynb      # OpenAI Agents SDK + Azure AI Agents
+├── 02_deep_research_with_bing_search_scraping.ipynb  # + Web scraping
+├── 03_deep_research_with_azure_ai_agents_only.ipynb  # Pure Azure AI Agents
+├── 04_deep_research_with_agent_framework.ipynb  # Agent Framework (v1 SDK)
+├── 05_deep_research_with_agent_framework_v2.ipynb    # Agent Framework (v2 SDK)
+├── .env.example                                 # Environment variables template
+├── common/                                      # Shared utilities
+│   ├── create_azure_ai_agents.py / _v2.py       # Agent creation scripts
+│   ├── data_models.py                           # Pydantic models
+│   ├── utils_*.py                               # Search, summary, scraping, research utils
+│   └── helper.py, update_instructions.py
+├── maf/                                         # Agent Framework modules
+│   ├── agents.py / agents_v2.py                 # Agent definitions
+│   ├── nodes.py / nodes_v2.py                   # Workflow executors
+│   ├── middleware.py                            # Response validation
+│   └── ...                                      # Helper scripts & agent creation
+└── requirements/                                # Per-notebook dependencies
+    └── 01_...txt through 05_...txt
+```
